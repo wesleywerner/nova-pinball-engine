@@ -24,13 +24,13 @@
 
 -- This example shows the bare minimum to get a pinball game up and running.
 
-local pinball = require ("nova-engine")
+local pinball = require ("nova-pinball-engine")
 
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
     -- Load the table layout into the pinball engine
     local binser = require("binser")
-    local mydata, size = love.filesystem.read("sample-table/nova.pinball", nil)
+    local mydata, size = love.filesystem.read("nova.pinball", nil)
     local tableDefinition = binser.deserialize(mydata)
     pinball:loadTable(tableDefinition)
     pinball:newBall()
