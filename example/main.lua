@@ -47,6 +47,13 @@ function love.keypressed (key, isrepeat)
     elseif (key == " ") then
         pinball:newBall()
     end
+    if (key == "lshift") then pinball:moveLeftFlippers() end
+    if (key == "rshift") then pinball:moveRightFlippers() end
+end
+
+function love.keyreleased(key)
+    if (key == "lshift") then pinball:releaseLeftFlippers() end
+    if (key == "rshift") then pinball:releaseRightFlippers() end
 end
 
 function love.draw ( )

@@ -70,6 +70,40 @@ function pinball:resize(w, h)
     if (self.table) then self.cfg.drawScale = h / self.table.size.height end
 end
 
+function pinball:moveLeftFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "left") then
+            flip.torque = -1000000
+        end
+    end
+end
+
+function pinball:releaseLeftFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "left") then
+            flip.body:applyTorque(1000000)
+            flip.torque = nil
+        end
+    end
+end
+
+function pinball:moveRightFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "right") then
+            flip.torque = 1000000
+        end
+    end
+end
+
+function pinball:releaseRightFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "right") then
+            flip.body:applyTorque(-1000000)
+            flip.torque = nil
+        end
+    end
+end
+
 -- Update the pinball simulation
 function pinball:update (dt)
 
@@ -132,16 +166,12 @@ function pinball:update (dt)
     end
 
     -- Handle flipper interaction
-    local lshift = love.keyboard.isDown(self.cfg.leftKey)
-    local rshift = love.keyboard.isDown(self.cfg.rightKey)
     for _, flip in pairs(self.bodies.flippers) do
-        if (lshift and flip.orientation == "left") then
-            flip.body:applyTorque(-1000000)
-        elseif (rshift and flip.orientation == "right") then
-            flip.body:applyTorque(1000000)
+        if (flip.torque) then
+            flip.body:applyTorque(flip.torque)
         end
     end
-
+    
     -- Update the physics world
     self.world:update(dt)
 
