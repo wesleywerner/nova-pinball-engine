@@ -47,6 +47,7 @@ pinball.cfg = {
     -- simulating the ball on a sloped surface we create
     -- faux drag with increased gravity.
     gravity = 12,
+    pixelsPerMeter = 64,
 
     -- Ball speeds can accumulate pretty steep with a lot of kickers
     -- and bumpers in play. We limit these for reasonable play.
@@ -599,12 +600,21 @@ function pinball.translatePoints (x, y, vertices)
 end
 
 function pinball:setupPhysics ()
-    local pixelsPerMeter = 64
     local allowSleeping = true
-    love.physics.setMeter(pixelsPerMeter)
-    self.world = love.physics.newWorld(0, self.cfg.gravity * pixelsPerMeter, allowSleeping)
+    love.physics.setMeter(self.cfg.pixelsPerMeter)
+    self.world = love.physics.newWorld(0, self.cfg.gravity * self.cfg.pixelsPerMeter, allowSleeping)
     self.world:setCallbacks(self.beginContact)
     self.world:setContactFilter(self.contactFilter)
+end
+
+function pinball:setGravity(g)
+    local n = g * self.cfg.pixelsPerMeter
+    self.world:setGravity(0, n)
+end
+
+function pinball:restoreGravity()
+    local n = self.cfg.gravity * self.cfg.pixelsPerMeter
+    self.world:setGravity(0, n)
 end
 
 pinball:setupPhysics()
