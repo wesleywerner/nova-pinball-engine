@@ -38,6 +38,8 @@ pinball.cfg = {
     -- Used internally to track the camera's position.
     cameraY = 0,
 
+    translateOffset = {x=0, y=0},
+
     -- Offset the camera so balls appear in the center of the window
     cameraOffset = love.window.getHeight() / 2,
     cameraBorder = love.window.getHeight() / 2.5,
@@ -262,7 +264,7 @@ function pinball:setCamera ()
         end
 
         -- Apply the translation
-        love.graphics.translate(0, self.cfg.cameraY)
+        love.graphics.translate(0, self.cfg.cameraY + self.cfg.translateOffset.y)
 
     else
     
