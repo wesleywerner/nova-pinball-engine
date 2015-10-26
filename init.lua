@@ -617,5 +617,11 @@ function pinball:restoreGravity()
     self.world:setGravity(0, n)
 end
 
+function pinball:setBallDampening(value)
+    for _, ball in pairs(self.bodies.balls) do
+        ball.body:setLinearDamping(value)
+    end
+end
+
 pinball:setupPhysics()
 return pinball
