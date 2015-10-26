@@ -40,6 +40,7 @@ pinball.cfg = {
 
     -- Offset the camera so balls appear in the center of the window
     cameraOffset = love.window.getHeight() / 2,
+    cameraBorder = love.window.getHeight() / 2.5,
 
     drawScale = 1,
 
@@ -247,7 +248,7 @@ function pinball:setCamera ()
             
             -- Clamp the position to sane limits.
             -- This keeps the view static when near the top or bottom.
-            lowestY = self.clamp(self.table.size.y1+self.cfg.cameraOffset, lowestY, self.table.size.y2-self.cfg.cameraOffset)
+            lowestY = self.clamp(self.table.size.y1+self.cfg.cameraBorder, lowestY, self.table.size.y2-self.cfg.cameraBorder)
 
             -- Offset the lowest point with the camera's (precalculated) offset.
             -- This moves the camera focus to the middle of the window, and not the top.
