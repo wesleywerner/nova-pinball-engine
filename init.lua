@@ -195,9 +195,6 @@ function pinball:draw ()
 
     if (not self.bodies) then return end
 
-    love.graphics.origin()
-    self:setCamera()
-
     -- drawWall (points)
     if (self.drawWall) then
         for i, wall in pairs(self.bodies.walls) do
@@ -241,8 +238,6 @@ function pinball:draw ()
             self.drawBall(ball.body:getX(), ball.body:getY(), ball.shape:getRadius())
         end
     end
-
-    self:resetCamera()
 
 end
 

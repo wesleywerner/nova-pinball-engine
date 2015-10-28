@@ -57,6 +57,7 @@ function love.keyreleased(key)
 end
 
 function love.draw ( )
+    pinball:setCamera()
     pinball:draw()
 end
 
