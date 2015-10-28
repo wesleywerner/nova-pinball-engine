@@ -207,7 +207,7 @@ function pinball:draw ()
     -- drawKicker (tag, points)
     if (self.drawKicker) then
         for i, kick in pairs(self.bodies.kickers) do
-            self.drawKicker(kick.data.tag, {kick.body:getWorldPoints(kick.shape:getPoints())})
+            self.drawKicker(kick.data.tag, kick.body:getX(), kick.body:getY(), {kick.body:getWorldPoints(kick.shape:getPoints())})
         end
     end
     
@@ -393,12 +393,11 @@ function pinball:createGate (def)
 end
 
 function pinball:createKicker (def)
-    local vertices = pinball.translatePoints(def.x, def.y, def.vertices)
     local kickforce = 4
     local kick = { }
     kick.data = def
-    kick.body = love.physics.newBody(self.world, x, y, "kinematic")
-    kick.shape = love.physics.newChainShape(false, unpack(vertices))
+    kick.body = love.physics.newBody(self.world, def.x, def.y, "kinematic")
+    kick.shape = love.physics.newChainShape(false, unpack(def.vertices))
     kick.fixture = love.physics.newFixture(kick.body, kick.shape, 0)
     kick.fixture:setUserData(kick.data)
     kick.fixture:setRestitution(kickforce)
