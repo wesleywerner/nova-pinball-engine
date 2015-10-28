@@ -36,7 +36,7 @@ pinball.cfg = {
     cameraFollowsBall = true,
 
     -- Used internally to track the camera's position.
-    cameraY = 0,
+    cameraY = nil,
 
     translateOffset = {x=0, y=0},
 
@@ -267,12 +267,16 @@ function pinball:setCamera ()
             -- Instead of setting the camera to it's intended position
             -- in one step, we ease it in, giving a smooth motion.
             -- This also eliminates "screen bounce" for rapidly bouncing balls.
-            self.cfg.cameraY = self.cfg.cameraY + (targetY - self.cfg.cameraY) * 0.1
+            if (not self.cfg.cameraY) then
+                self.cfg.cameraY = targetY
+            else
+                self.cfg.cameraY = self.cfg.cameraY + (targetY - self.cfg.cameraY) * 0.1
+            end
 
         end
 
         -- Apply the translation
-        love.graphics.translate(0, self.cfg.cameraY + self.cfg.translateOffset.y)
+        love.graphics.translate(0, (self.cfg.cameraY or 0) + self.cfg.translateOffset.y)
 
     else
     
