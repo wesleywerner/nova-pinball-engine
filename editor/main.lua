@@ -372,6 +372,13 @@ function drawPinballComponents ()
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
+        -- INDICATORS
+        if (component.type == "indicator") then
+            love.graphics.setLineWidth (1)
+            love.graphics.setColor(0, 128, 128)
+            love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
+        end
+
         -- GATES
         if (component.type == "gate") then
             love.graphics.setLineWidth (1)
@@ -467,6 +474,14 @@ function registerTools ()
         guiAction=usePolyTool,
         vertices={60,16, 60,-16, -60,-8, -60,8},
         pivot={x=60, y=0}
+        };
+        {
+        category="Tools",
+        type="indicator",
+        text="Indicator",
+        icon="icons/triangle.png",
+        guiAction=usePolyTool,
+        vertices={20, 17, -21, 17, -1, -18, 20, 17},
         }
     }
 
