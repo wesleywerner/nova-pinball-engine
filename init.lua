@@ -336,6 +336,10 @@ function pinball:loadTable (pinballTableDefinition)
             self:createTrigger(v)
         end
     
+        if (v.type == "indicator") then
+            self:createTrigger(v)
+        end
+    
         if (v.type == "gate") then
             self:createGate(v)
         end
