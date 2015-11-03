@@ -284,8 +284,7 @@ end
 
 -- Reset the graphics translation and scale
 function pinball:resetCamera ()
-    love.graphics.scale(1, 1)
-    love.graphics.origin()
+    self.cfg.cameraY = 0
 end
 
 -- Load a pinball table layout from a definition table.
