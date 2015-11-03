@@ -429,7 +429,7 @@ function pinball:createDrainChain ()
         x1, y1,       -- top left
         x2, y1,     -- top right
         x2, y2,   -- bot right
-        x, y2      -- bot left
+        x1, y2      -- bot left
         }
     
     local drain = { }
