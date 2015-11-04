@@ -319,8 +319,7 @@ function pinball:loadTable (pinballTableDefinition)
     for k, v in pairs(self.table.components) do
 
         if (v.type == "wall") then
-            local worldPoints = pinball.translatePoints(v.x, v.y, v.vertices)
-            self:createWall(worldPoints)
+            self:createWall(v)
         end
 
         if (v.type == "bumper") then
@@ -354,13 +353,15 @@ function pinball:loadTable (pinballTableDefinition)
     
 end
 
-function pinball:createWall (vertices)
+function pinball:createWall (def)
+    local worldPoints = pinball.translatePoints(def.x, def.y, def.vertices)
     local shell = { }
+    shell.data = def
     shell.body = love.physics.newBody(self.world, 0, 0)
-    shell.shape = love.physics.newChainShape(false, unpack(vertices))
+    shell.shape = love.physics.newChainShape(false, unpack(worldPoints))
     shell.fixture = love.physics.newFixture(shell.body, shell.shape)
     shell.fixture:setRestitution(0.4)
-    shell.fixture:setUserData({ type="wall" })
+    shell.fixture:setUserData(shell.data)
     table.insert(self.bodies.all, shell)
     table.insert(self.bodies.walls, shell)
 end
