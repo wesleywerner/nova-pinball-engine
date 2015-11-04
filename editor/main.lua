@@ -1041,8 +1041,8 @@ function saveToFile ()
     end
     
     local saveCallback = function(filename)
-        local binser = require("binser")
-        local mydata = binser.serialize(tableDef)
+        local pickle = require("pickle")
+        local mydata = pickle.pickle(tableDef)
         love.filesystem.write(filename, mydata, nil)
         local sizeText = " (" .. tableDef.size.width .. " x " .. tableDef.size.height .. ")"
         gui.status("Saved " .. filename .. sizeText)
@@ -1076,10 +1076,10 @@ function loadFromFile ()
         is_file = love.filesystem.isFile(filename)
         if (is_file) then
             currentFilename = filename
-            local binser = require("binser")
             clearTableDefinition()
             local mydata, size = love.filesystem.read(filename, nil)
-            local derez = binser.deserialize(mydata)
+            local pickle = require("pickle")
+            local derez = pickle.unpickle(mydata)
             
             if (type(derez) == "table" and derez.identifier == "nova pinball table layout") then
                 tableDef = derez

@@ -7,7 +7,6 @@ Created by Wesley "keyboard monkey" Werner
 # Good to know
 
 + Written against LÖVE `0.9.1`.
-+ Example makes use of the [binser library by bakpakin](https://github.com/bakpakin/binser).
 + Makes heavy use of the LÖVE physics module.
 + The table editor uses the [Love Frames library by KennyShiels](https://github.com/KennyShields/LoveFrames)
 + Powered by kittens.
