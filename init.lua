@@ -344,7 +344,7 @@ function pinball:loadTable (pinballTableDefinition)
         end
     
         if (v.type == "flipper") then
-            self:createFlipper(v.x, v.y, v.vertices, anchorBody, v.orientation, v.pivot)
+            self:createFlipper(v, anchorBody)
         end
 
     end
@@ -493,25 +493,27 @@ end
 
 -- Create a flipper that is controlled by the player.
 -- The orientation can be "left" or "right".
-function pinball:createFlipper (x, y, vertices, anchorBody, orientation, pivot)
+function pinball:createFlipper (def, anchorBody)
     local flip = { }
-    flip.body = love.physics.newBody(self.world, x, y, "dynamic")
+    flip.data = def
+    flip.body = love.physics.newBody(self.world, def.x, def.y, "dynamic")
     --flip.body:setGravityScale(0)
-    flip.shape = love.physics.newPolygonShape(unpack(vertices))
+    flip.shape = love.physics.newPolygonShape(unpack(def.vertices))
     flip.fixture = love.physics.newFixture(flip.body, flip.shape, 1.5)    -- mass
     flip.fixture:setRestitution(0)
+    flip.fixture:setUserData(flip.data)
     -- Revolute Joint + Motor
-    flip.joint = love.physics.newRevoluteJoint(anchorBody, flip.body, x+pivot.x, y+pivot.y, false)
+    flip.joint = love.physics.newRevoluteJoint(anchorBody, flip.body, def.x + def.pivot.x, def.y + def.pivot.y, false)
     --flip.joint:setMotorSpeed(200)
     --flip.joint:setMotorEnabled(true)
     -- Limit movement
-    local limitA = orientation == "left" and 5 or 30
-    local limitB = orientation == "right" and 5 or 30
+    local limitA = def.orientation == "left" and 5 or 30
+    local limitB = def.orientation == "right" and 5 or 30
     flip.joint:setLimits(-limitA*self.cfg.DEGTORAD, limitB*self.cfg.DEGTORAD)
     flip.joint:setLimitsEnabled(true)
-    flip.orientation = orientation
-    flip.pivot = pivot
-    local polyW, polyH = pinball.getPolySize(vertices)
+    flip.orientation = def.orientation
+    flip.pivot = def.pivot
+    local polyW, polyH = pinball.getPolySize(def.vertices)
     flip.origin = {x=polyW/2, y=polyH/2}
     table.insert(self.bodies.all, flip)
     table.insert(self.bodies.flippers, flip)
