@@ -108,10 +108,10 @@ function pinball:releaseRightFlippers()
     end
 end
 
-function pinball:nudge(min, max)
+function pinball:nudge(minx, maxx, miny, maxy)
     for _, ball in ipairs(self.bodies.balls) do
-        local rx = math.random(-max, max) + min
-        local ry = math.random(-max, max) + min
+        local rx = math.random(minx, maxx)
+        local ry = math.random(miny, maxy)
         ball.body:applyLinearImpulse(rx, ry)
     end
 end
