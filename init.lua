@@ -77,7 +77,7 @@ end
 function pinball:moveLeftFlippers()
     for _, flip in pairs(self.bodies.flippers) do
         if (flip.orientation == "left") then
-            flip.torque = -1000000
+            flip.torque = -2000000
         end
     end
 end
@@ -85,7 +85,7 @@ end
 function pinball:releaseLeftFlippers()
     for _, flip in pairs(self.bodies.flippers) do
         if (flip.orientation == "left") then
-            flip.body:applyTorque(1000000)
+            flip.body:applyTorque(2000000)
             flip.torque = nil
         end
     end
@@ -94,7 +94,7 @@ end
 function pinball:moveRightFlippers()
     for _, flip in pairs(self.bodies.flippers) do
         if (flip.orientation == "right") then
-            flip.torque = 1000000
+            flip.torque = 2000000
         end
     end
 end
@@ -102,7 +102,7 @@ end
 function pinball:releaseRightFlippers()
     for _, flip in pairs(self.bodies.flippers) do
         if (flip.orientation == "right") then
-            flip.body:applyTorque(-1000000)
+            flip.body:applyTorque(-2000000)
             flip.torque = nil
         end
     end
