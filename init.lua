@@ -41,8 +41,8 @@ pinball.cfg = {
     translateOffset = {x=0, y=0},
 
     -- Offset the camera so balls appear in the center of the window
-    cameraOffset = love.window.getHeight() / 2,
-    cameraBorder = love.window.getHeight() / 2.5,
+    cameraOffset = love.graphics.getHeight() / 2,
+    cameraBorder = love.graphics.getHeight() / 2.5,
 
     drawScale = 1,
 
@@ -291,7 +291,7 @@ end
 function pinball:loadTable (pinballTableDefinition)
 
     self.table = pinballTableDefinition
-    self.cfg.drawScale = love.window.getHeight() / self.table.size.height
+    self.cfg.drawScale = love.graphics.getHeight() / self.table.size.height
 
     -- Destroy existing physics objects
     if (self.bodies.all) then
