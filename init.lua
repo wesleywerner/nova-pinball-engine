@@ -36,10 +36,13 @@ pinball.cfg = {
     cameraFollowsBall = true,
 
     -- Used internally to track the camera's position.
-    cameraY = 0,
+    cameraY = nil,
+
+    translateOffset = {x=0, y=0},
 
     -- Offset the camera so balls appear in the center of the window
-    cameraOffset = love.window.getHeight() / 2,
+    cameraOffset = love.graphics.getHeight() / 2,
+    cameraBorder = love.graphics.getHeight() / 2.5,
 
     drawScale = 1,
 
@@ -47,6 +50,7 @@ pinball.cfg = {
     -- simulating the ball on a sloped surface we create
     -- faux drag with increased gravity.
     gravity = 12,
+    pixelsPerMeter = 64,
 
     -- Ball speeds can accumulate pretty steep with a lot of kickers
     -- and bumpers in play. We limit these for reasonable play.
@@ -68,6 +72,48 @@ pinball.bodies = { }
 function pinball:resize(w, h)
     self.cfg.cameraOffset = h / 2
     if (self.table) then self.cfg.drawScale = h / self.table.size.height end
+end
+
+function pinball:moveLeftFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "left") then
+            flip.torque = -2000000
+        end
+    end
+end
+
+function pinball:releaseLeftFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "left") then
+            flip.body:applyTorque(2000000)
+            flip.torque = nil
+        end
+    end
+end
+
+function pinball:moveRightFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "right") then
+            flip.torque = 2000000
+        end
+    end
+end
+
+function pinball:releaseRightFlippers()
+    for _, flip in pairs(self.bodies.flippers) do
+        if (flip.orientation == "right") then
+            flip.body:applyTorque(-2000000)
+            flip.torque = nil
+        end
+    end
+end
+
+function pinball:nudge(minx, maxx, miny, maxy)
+    for _, ball in ipairs(self.bodies.balls) do
+        local rx = math.random(minx, maxx)
+        local ry = math.random(miny, maxy)
+        ball.body:applyLinearImpulse(rx, ry)
+    end
 end
 
 -- Update the pinball simulation
@@ -132,16 +178,12 @@ function pinball:update (dt)
     end
 
     -- Handle flipper interaction
-    local lshift = love.keyboard.isDown(self.cfg.leftKey)
-    local rshift = love.keyboard.isDown(self.cfg.rightKey)
     for _, flip in pairs(self.bodies.flippers) do
-        if (lshift and flip.orientation == "left") then
-            flip.body:applyTorque(-1000000)
-        elseif (rshift and flip.orientation == "right") then
-            flip.body:applyTorque(1000000)
+        if (flip.torque) then
+            flip.body:applyTorque(flip.torque)
         end
     end
-
+    
     -- Update the physics world
     self.world:update(dt)
 
@@ -152,9 +194,6 @@ end
 function pinball:draw ()
 
     if (not self.bodies) then return end
-
-    love.graphics.origin()
-    self:setCamera()
 
     -- drawWall (points)
     if (self.drawWall) then
@@ -173,7 +212,7 @@ function pinball:draw ()
     -- drawKicker (tag, points)
     if (self.drawKicker) then
         for i, kick in pairs(self.bodies.kickers) do
-            self.drawKicker(kick.data.tag, {kick.body:getWorldPoints(kick.shape:getPoints())})
+            self.drawKicker(kick.data.tag, kick.body:getX(), kick.body:getY(), {kick.body:getWorldPoints(kick.shape:getPoints())})
         end
     end
     
@@ -200,8 +239,6 @@ function pinball:draw ()
         end
     end
 
-    self:resetCamera()
-
 end
 
 function pinball:setCamera ()
@@ -216,7 +253,7 @@ function pinball:setCamera ()
             
             -- Clamp the position to sane limits.
             -- This keeps the view static when near the top or bottom.
-            lowestY = self.clamp(self.table.size.y1+self.cfg.cameraOffset, lowestY, self.table.size.y2-self.cfg.cameraOffset)
+            lowestY = self.clamp(self.table.size.y1+self.cfg.cameraBorder, lowestY, self.table.size.y2-self.cfg.cameraBorder)
 
             -- Offset the lowest point with the camera's (precalculated) offset.
             -- This moves the camera focus to the middle of the window, and not the top.
@@ -225,12 +262,16 @@ function pinball:setCamera ()
             -- Instead of setting the camera to it's intended position
             -- in one step, we ease it in, giving a smooth motion.
             -- This also eliminates "screen bounce" for rapidly bouncing balls.
-            self.cfg.cameraY = self.cfg.cameraY + (targetY - self.cfg.cameraY) * 0.1
+            if (not self.cfg.cameraY) then
+                self.cfg.cameraY = targetY
+            else
+                self.cfg.cameraY = self.cfg.cameraY + (targetY - self.cfg.cameraY) * 0.1
+            end
 
         end
 
         -- Apply the translation
-        love.graphics.translate(0, self.cfg.cameraY)
+        love.graphics.translate(0, (self.cfg.cameraY or 0) + self.cfg.translateOffset.y)
 
     else
     
@@ -243,15 +284,14 @@ end
 
 -- Reset the graphics translation and scale
 function pinball:resetCamera ()
-    love.graphics.scale(1, 1)
-    love.graphics.origin()
+    self.cfg.cameraY = 0
 end
 
 -- Load a pinball table layout from a definition table.
 function pinball:loadTable (pinballTableDefinition)
 
     self.table = pinballTableDefinition
-    self.cfg.drawScale = love.window.getHeight() / self.table.size.height
+    self.cfg.drawScale = love.graphics.getHeight() / self.table.size.height
 
     -- Destroy existing physics objects
     if (self.bodies.all) then
@@ -279,8 +319,7 @@ function pinball:loadTable (pinballTableDefinition)
     for k, v in pairs(self.table.components) do
 
         if (v.type == "wall") then
-            local worldPoints = pinball.translatePoints(v.x, v.y, v.vertices)
-            self:createWall(worldPoints)
+            self:createWall(v)
         end
 
         if (v.type == "bumper") then
@@ -295,12 +334,16 @@ function pinball:loadTable (pinballTableDefinition)
             self:createTrigger(v)
         end
     
+        if (v.type == "indicator") then
+            self:createTrigger(v)
+        end
+    
         if (v.type == "gate") then
             self:createGate(v)
         end
     
         if (v.type == "flipper") then
-            self:createFlipper(v.x, v.y, v.vertices, anchorBody, v.orientation, v.pivot)
+            self:createFlipper(v, anchorBody)
         end
 
     end
@@ -310,13 +353,15 @@ function pinball:loadTable (pinballTableDefinition)
     
 end
 
-function pinball:createWall (vertices)
+function pinball:createWall (def)
+    local worldPoints = pinball.translatePoints(def.x, def.y, def.vertices)
     local shell = { }
+    shell.data = def
     shell.body = love.physics.newBody(self.world, 0, 0)
-    shell.shape = love.physics.newChainShape(false, unpack(vertices))
+    shell.shape = love.physics.newChainShape(false, unpack(worldPoints))
     shell.fixture = love.physics.newFixture(shell.body, shell.shape)
     shell.fixture:setRestitution(0.4)
-    shell.fixture:setUserData({ type="wall" })
+    shell.fixture:setUserData(shell.data)
     table.insert(self.bodies.all, shell)
     table.insert(self.bodies.walls, shell)
 end
@@ -353,18 +398,18 @@ function pinball:createGate (def)
     obj.body = love.physics.newBody(self.world, def.x, def.y, "static")
     obj.shape = love.physics.newChainShape(false, unpack(def.vertices))
     obj.fixture = love.physics.newFixture(obj.body, obj.shape, 0)
+    obj.fixture:setRestitution(0.25)
     obj.fixture:setUserData(obj.data)
     table.insert(self.bodies.all, obj)
     table.insert(self.bodies.triggers, obj)
 end
 
 function pinball:createKicker (def)
-    local vertices = pinball.translatePoints(def.x, def.y, def.vertices)
     local kickforce = 4
     local kick = { }
     kick.data = def
-    kick.body = love.physics.newBody(self.world, x, y, "kinematic")
-    kick.shape = love.physics.newChainShape(false, unpack(vertices))
+    kick.body = love.physics.newBody(self.world, def.x, def.y, "kinematic")
+    kick.shape = love.physics.newChainShape(false, unpack(def.vertices))
     kick.fixture = love.physics.newFixture(kick.body, kick.shape, 0)
     kick.fixture:setUserData(kick.data)
     kick.fixture:setRestitution(kickforce)
@@ -385,7 +430,7 @@ function pinball:createDrainChain ()
         x1, y1,       -- top left
         x2, y1,     -- top right
         x2, y2,   -- bot right
-        x, y2      -- bot left
+        x1, y2      -- bot left
         }
     
     local drain = { }
@@ -450,25 +495,27 @@ end
 
 -- Create a flipper that is controlled by the player.
 -- The orientation can be "left" or "right".
-function pinball:createFlipper (x, y, vertices, anchorBody, orientation, pivot)
+function pinball:createFlipper (def, anchorBody)
     local flip = { }
-    flip.body = love.physics.newBody(self.world, x, y, "dynamic")
+    flip.data = def
+    flip.body = love.physics.newBody(self.world, def.x, def.y, "dynamic")
     --flip.body:setGravityScale(0)
-    flip.shape = love.physics.newPolygonShape(unpack(vertices))
+    flip.shape = love.physics.newPolygonShape(unpack(def.vertices))
     flip.fixture = love.physics.newFixture(flip.body, flip.shape, 1.5)    -- mass
     flip.fixture:setRestitution(0)
+    flip.fixture:setUserData(flip.data)
     -- Revolute Joint + Motor
-    flip.joint = love.physics.newRevoluteJoint(anchorBody, flip.body, x+pivot.x, y+pivot.y, false)
+    flip.joint = love.physics.newRevoluteJoint(anchorBody, flip.body, def.x + def.pivot.x, def.y + def.pivot.y, false)
     --flip.joint:setMotorSpeed(200)
     --flip.joint:setMotorEnabled(true)
     -- Limit movement
-    local limitA = orientation == "left" and 5 or 30
-    local limitB = orientation == "right" and 5 or 30
+    local limitA = def.orientation == "left" and 5 or 30
+    local limitB = def.orientation == "right" and 5 or 30
     flip.joint:setLimits(-limitA*self.cfg.DEGTORAD, limitB*self.cfg.DEGTORAD)
     flip.joint:setLimitsEnabled(true)
-    flip.orientation = orientation
-    flip.pivot = pivot
-    local polyW, polyH = pinball.getPolySize(vertices)
+    flip.orientation = def.orientation
+    flip.pivot = def.pivot
+    local polyW, polyH = pinball.getPolySize(def.vertices)
     flip.origin = {x=polyW/2, y=polyH/2}
     table.insert(self.bodies.all, flip)
     table.insert(self.bodies.flippers, flip)
@@ -569,12 +616,27 @@ function pinball.translatePoints (x, y, vertices)
 end
 
 function pinball:setupPhysics ()
-    local pixelsPerMeter = 64
     local allowSleeping = true
-    love.physics.setMeter(pixelsPerMeter)
-    self.world = love.physics.newWorld(0, self.cfg.gravity * pixelsPerMeter, allowSleeping)
+    love.physics.setMeter(self.cfg.pixelsPerMeter)
+    self.world = love.physics.newWorld(0, self.cfg.gravity * self.cfg.pixelsPerMeter, allowSleeping)
     self.world:setCallbacks(self.beginContact)
     self.world:setContactFilter(self.contactFilter)
+end
+
+function pinball:setGravity(g)
+    local n = g * self.cfg.pixelsPerMeter
+    self.world:setGravity(0, n)
+end
+
+function pinball:restoreGravity()
+    local n = self.cfg.gravity * self.cfg.pixelsPerMeter
+    self.world:setGravity(0, n)
+end
+
+function pinball:setBallDampening(value)
+    for _, ball in pairs(self.bodies.balls) do
+        ball.body:setLinearDamping(value)
+    end
 end
 
 pinball:setupPhysics()

@@ -372,6 +372,13 @@ function drawPinballComponents ()
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
+        -- INDICATORS
+        if (component.type == "indicator") then
+            love.graphics.setLineWidth (1)
+            love.graphics.setColor(0, 128, 128)
+            love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
+        end
+
         -- GATES
         if (component.type == "gate") then
             love.graphics.setLineWidth (1)
@@ -467,6 +474,14 @@ function registerTools ()
         guiAction=usePolyTool,
         vertices={60,16, 60,-16, -60,-8, -60,8},
         pivot={x=60, y=0}
+        };
+        {
+        category="Tools",
+        type="indicator",
+        text="Indicator",
+        icon="icons/triangle.png",
+        guiAction=usePolyTool,
+        vertices={20, 17, -21, 17, -1, -18, 20, 17},
         }
     }
 
@@ -1026,8 +1041,8 @@ function saveToFile ()
     end
     
     local saveCallback = function(filename)
-        local binser = require("binser")
-        local mydata = binser.serialize(tableDef)
+        local pickle = require("pickle")
+        local mydata = pickle.pickle(tableDef)
         love.filesystem.write(filename, mydata, nil)
         local sizeText = " (" .. tableDef.size.width .. " x " .. tableDef.size.height .. ")"
         gui.status("Saved " .. filename .. sizeText)
@@ -1061,10 +1076,10 @@ function loadFromFile ()
         is_file = love.filesystem.isFile(filename)
         if (is_file) then
             currentFilename = filename
-            local binser = require("binser")
             clearTableDefinition()
             local mydata, size = love.filesystem.read(filename, nil)
-            local derez = binser.deserialize(mydata)
+            local pickle = require("pickle")
+            local derez = pickle.unpickle(mydata)
             
             if (type(derez) == "table" and derez.identifier == "nova pinball table layout") then
                 tableDef = derez

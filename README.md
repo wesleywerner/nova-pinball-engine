@@ -7,9 +7,8 @@ Created by Wesley "keyboard monkey" Werner
 # Good to know
 
 + Written against LÖVE `0.9.1`.
-+ Example makes use of the [binser library by bakpakin](https://github.com/bakpakin/binser).
 + Makes heavy use of the LÖVE physics module.
-+ The table editor uses the [Love Frames library by KennyShiels](https://github.com/KennyShields/LoveFrames)
++ The table editor uses the [Love Frames library by KennyShields](https://github.com/KennyShields/LoveFrames)
 + Powered by kittens.
 + `main.lua` is an example pinball game that shows how to get up and running.
 

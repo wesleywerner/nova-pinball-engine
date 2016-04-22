@@ -151,16 +151,8 @@ function gui.createToolbox (tools)
 	tbpanel:SetSize(gui.toolboxWidth, screenHeight)
 	tbpanel:SetPos(0, 0)
 
-    -- Selected tool name
-    local toolframe = loveframes.Create("frame", tbpanel)
-    toolframe:SetName("Current Tool")
-    toolframe:SetSize(gui.toolboxWidth, 80)
-    toolframe:SetDraggable(false)
-    toolframe:ShowCloseButton(false)
-
     -- Toolbox list
     local tblist = loveframes.Create("list", tbpanel)
-    tblist:SetY(toolframe:GetHeight())
     tblist:SetHeight(screenHeight)
     tblist:SetWidth(gui.toolboxWidth)
 

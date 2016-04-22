@@ -47,9 +47,17 @@ function love.keypressed (key, isrepeat)
     elseif (key == " ") then
         pinball:newBall()
     end
+    if (key == "lshift") then pinball:moveLeftFlippers() end
+    if (key == "rshift") then pinball:moveRightFlippers() end
+end
+
+function love.keyreleased(key)
+    if (key == "lshift") then pinball:releaseLeftFlippers() end
+    if (key == "rshift") then pinball:releaseRightFlippers() end
 end
 
 function love.draw ( )
+    pinball:setCamera()
     pinball:draw()
 end
 
@@ -72,7 +80,7 @@ function pinball.drawBumper (tag, x, y, r)
     love.graphics.circle("line", x, y, r)
 end
 
-function pinball.drawKicker (tag, points)
+function pinball.drawKicker (tag, x, y, points)
     love.graphics.setLineWidth(1)
     love.graphics.setColor(108, 196, 113)
     love.graphics.polygon("fill", points)
