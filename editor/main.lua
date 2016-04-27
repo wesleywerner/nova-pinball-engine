@@ -58,16 +58,9 @@ function love.draw()
     end
 end
 
-function love.mousepressed(x, y, button)
+function love.wheelmoved(x, y)
 
-    if (states.current ~= states.editor) then return end
-    loveframes.mousepressed(x, y, button)
-    if (disableEditor) then return end
-    
-    if (x < gui.toolboxWidth) then return end
-    if (x > gui.advancedPaneX) then return end
-
-    if (button == "wu") then
+    if (y > 0) then
         if (love.keyboard.isDown ("lshift")) then
             viewPositionX = viewPositionX + 50
         else
@@ -75,15 +68,27 @@ function love.mousepressed(x, y, button)
         end
     end
 
-    if (button == "wd") then
+    if (y < 0) then
         if (love.keyboard.isDown ("lshift")) then
             viewPositionX = viewPositionX - 50
         else
             viewPositionY = viewPositionY - 50
         end
     end
+    
+end
 
-    if (button == "l") then
+
+function love.mousepressed(x, y, button)
+
+    if (states.current ~= states.editor) then return end
+    loveframes.mousepressed(x, y, "l")
+    if (disableEditor) then return end
+    
+    if (x < gui.toolboxWidth) then return end
+    if (x > gui.advancedPaneX) then return end
+
+    if (button == 1) then
 
         if (tool.type == "select") then
         -- Selection Tool
@@ -124,7 +129,7 @@ end
 
 function love.mousereleased(x, y, button)
     if (states.current ~= states.editor) then return end
-    loveframes.mousereleased(x, y, button)
+    loveframes.mousereleased(x, y, "l")
     if (disableEditor) then return end
     if (selection.item and selection.canMove) then
         createUndoPoint ()
@@ -265,10 +270,10 @@ end
 
 function createGuidelineBackground ()
     backgroundImage = love.graphics.newCanvas()
-    backgroundImage:clear(89, 157, 220, 255)
     backgroundImage:renderTo(function()
+        love.graphics.clear({89, 157, 220, 255})
         local gridSize = 10
-        local width, height = love.window.getDimensions()
+        local width, height = love.graphics.getDimensions()
         love.graphics.setColor(106, 165, 220)
         love.graphics.setLineWidth(1)
         --love.graphics.setLineStyle("rough")
