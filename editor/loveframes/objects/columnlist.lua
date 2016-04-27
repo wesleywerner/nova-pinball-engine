@@ -154,13 +154,13 @@ function newobject:draw()
 		v:draw()
 	end
 	
-	love.graphics.setStencil(stencilfunc)
+	love.graphics.stencil(stencilfunc)
 	
 	for k, v in ipairs(children) do
 		v:draw()
 	end
 	
-	love.graphics.setStencil()
+	love.graphics.setStencilTest()
 
 end
 
