@@ -44,7 +44,7 @@ end
 function love.keypressed (key, isrepeat)
     if (key == "escape") then
         love.event.quit()
-    elseif (key == " ") then
+    elseif (key == "space") then
         pinball:newBall()
     end
     if (key == "lshift") then pinball:moveLeftFlippers() end
