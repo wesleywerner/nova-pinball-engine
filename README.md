@@ -6,7 +6,7 @@ Created by Wesley "keyboard monkey" Werner
 
 # Good to know
 
-+ Written against LÖVE `0.9.1`.
++ Written against LÖVE `0.10.1`.
 + Makes heavy use of the LÖVE physics module.
 + The table editor uses the [Love Frames library by KennyShields](https://github.com/KennyShields/LoveFrames)
 + Powered by kittens.
