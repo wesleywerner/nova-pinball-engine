@@ -33,7 +33,7 @@ states.loading = {
     }
 
 states.startup = {
-    ["timeout"] = 2,
+    ["timeout"] = 1,
     ["timer"] = 0,
     ["next"] = states.loading
     }
