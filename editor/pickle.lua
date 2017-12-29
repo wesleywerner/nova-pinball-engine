@@ -68,6 +68,7 @@ function pickleModule.unpickle(s)
     error("can't unpickle a "..type(s)..", only strings")
   end
   local gentables = loadstring("return "..s)
+  if type(gentables) ~= "function" then return nil end
   local tables = gentables()
   
   for tnum = 1, table.getn(tables) do
