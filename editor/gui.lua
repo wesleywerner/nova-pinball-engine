@@ -275,15 +275,15 @@ function gui.fileDialog (mode, directory, callback, warn)
     frame:SetSize(300, 200)
     frame:Center()
     list:SetY(20)
-    list:SetSize(300, 140)
+    list:SetSize(300, 160)
     fileinput:SetY(180)
     fileinput:SetSize(200, 20)
     button:SetPos(200, 180)
     button:SetText(mode)
     button:SetSize(100, 20)
 
-    list:AddColumn("File name")
-    list:AddColumn("Last edited")
+    list:AddColumn("Filename")
+    list:AddColumn("Modified")
     
     list.OnRowClicked = function(parent, row, rowdata)
         fileinput:SetText(rowdata[1])
@@ -330,10 +330,12 @@ end
 function gui.showHelp()
 
     local helpText =
-[[Spacebar: select tool
-Arrows: move selection (Alt moves in small steps)
-Enter: apply selection
-Delete: remove selected object
+[[Editor functions
+-----------------
+Spacebar    select tool
+Arrows      move selection (Alt moves in small steps)
+Enter       apply selection
+Delete      remove selected object
 
 Control functions
 -----------------
@@ -353,7 +355,17 @@ Shift functions
 up, down    Scale selection height
 left, right Scale selection width
 Hold Alt to scale in small steps.
+
+Mouse functions
+-----------------
+wheel       scroll view vertically
+shift+wheel scroll view horizonally
+
+Your tables path is:
 ]]
+
+helpText = helpText .. love.filesystem.getSaveDirectory() .. "/tables"
+
     local frame = loveframes.Create("frame")
     frame:SetName("Nova pinball editor help")
     frame:SetSize(400, 500)
