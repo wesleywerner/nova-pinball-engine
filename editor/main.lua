@@ -13,12 +13,13 @@ disableEditor = false
 hasUnsavedChanges = false
 startupLogo = love.graphics.newImage("icons/startup-logo.png")
 
-function love.load ()
+function love.load()
     screenWidth, screenHeight = love.graphics.getDimensions()
     states:new (states.startup)
     states.flags["has loaded"] = false
     createGuidelineBackground()
     love.graphics.setNewFont(42)
+    copyExampleTable()
 end
 
 function love.update(dt)
@@ -1101,4 +1102,18 @@ function loadFromFile ()
     end
     -- Display the file chooser
     gui.fileDialog ("Load", saveDirectory, loadCallback, hasUnsavedChanges)
+end
+
+--- Copy the example table to the save directory if empty
+function copyExampleTable()
+
+    local tablePath = "tables"
+    if not love.filesystem.exists(tablePath) then
+        local contents, size = love.filesystem.read("example.pinball")
+        local filename = tablePath.."/example.pinball"
+        love.filesystem.createDirectory(tablePath)
+        love.filesystem.write(filename, contents, size)
+        print("created example table: "..filename)
+    end
+
 end
