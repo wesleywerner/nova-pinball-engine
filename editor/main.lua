@@ -1,4 +1,4 @@
-VERSION = "1.0"
+VERSION = "2.0"
 local states = require ("states")
 gui = require("gui")
 viewPositionX, viewPositionY = 150, -400
@@ -201,7 +201,7 @@ function love.keypressed(key, unicode)
         end
     end
 
-    if (key == " ") then useSelectTool() end
+    if (key == "space") then useSelectTool() end
     if (key == "kpenter"or key == "return") then applySelection() end
     if (key == "delete") then deleteSelected() end
     if (key == "f1") then gui.showHelp() end
@@ -259,7 +259,7 @@ function deleteSelected ()
 end
 
 function moveSelectedComponent ()
-    if (selection.item and selection.canMove and love.mouse.isDown("l")) then
+    if (selection.item and selection.canMove and love.mouse.isDown(1)) then
         local x, y = getMouse ()
         x = x + selection.xOffset
         y = y + selection.yOffset
