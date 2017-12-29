@@ -39,7 +39,7 @@ function love.load()
         pinball:loadTable(unpickledData)
         pinball:newBall()
     else
-        gui.status("Not a valid pinball layout file")
+        error("Not a valid pinball layout file")
     end
 
 end
