@@ -18,22 +18,30 @@
 -- https://github.com/wesleywerner/
 
 -- The pinball table editor was used to create the table layout.
--- The table file is nothing more than a lua table serialized
--- with the binser utility. You are free to deconstruct the table format, or
--- look at the editor code.
+-- The table file is nothing more than a pickled lua table.
+-- You are free to deconstruct the table format, or look at the editor code.
 
 -- This example shows the bare minimum to get a pinball game up and running.
 
 local pinball = require ("nova-pinball-engine")
 
 function love.load()
+
     love.graphics.setBackgroundColor(0, 0, 0)
+
     -- Load the table layout into the pinball engine
-    local binser = require("binser")
-    local mydata, size = love.filesystem.read("nova.pinball", nil)
-    local tableDefinition = binser.deserialize(mydata)
-    pinball:loadTable(tableDefinition)
-    pinball:newBall()
+
+    local pickledData, size = love.filesystem.read("example.pinball", nil)
+    local pickle = require("pickle")
+    local unpickledData = pickle.unpickle(pickledData)
+    
+    if (type(unpickledData) == "table" and unpickledData.identifier == "nova pinball table layout") then
+        pinball:loadTable(unpickledData)
+        pinball:newBall()
+    else
+        gui.status("Not a valid pinball layout file")
+    end
+
 end
 
 function love.update (dt)

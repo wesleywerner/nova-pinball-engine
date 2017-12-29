@@ -12,6 +12,10 @@ Created by Wesley "keyboard monkey" Werner
 + Powered by kittens.
 + `main.lua` is an example pinball game that shows how to get up and running.
 
+# Running the example
+
+The example needs the engine to run. Symlink or copy `nova-pinball-engine/` into the `example` directory then running `love example`
+
 # LICENSE
 
 Copyleft 2015
