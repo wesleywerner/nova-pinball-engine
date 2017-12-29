@@ -1,4 +1,4 @@
-VERSION = "2.0"
+VERSION = "0.10"
 local states = require ("states")
 gui = require("gui")
 viewPositionX, viewPositionY = 150, -400
@@ -46,6 +46,7 @@ function love.draw()
         love.graphics.setColor(255, 255, 255, 255)
         love.graphics.draw(backgroundImage, 0, 0)
         love.graphics.draw(startupLogo, 50, screenHeight - startupLogo:getHeight())
+        love.graphics.print("v"..VERSION)
     elseif (states.current == states.editor) then
         love.graphics.setColor(255, 255, 255, 255)
         love.graphics.draw(backgroundImage, 0, 0)
