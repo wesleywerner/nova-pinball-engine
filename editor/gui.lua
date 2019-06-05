@@ -241,11 +241,7 @@ function gui.hideMain()
 end
 
 function gui.setCursor(image)
-    if (image) then
-        love.mouse.setCursor(love.mouse.newCursor(love.graphics.newImage(image):getData(), 10, 10))
-    else
-        love.mouse.setCursor()
-    end
+    love.mouse.setCursor()
 end
 
 -- Get files in a directory as {filename, modtime}
@@ -255,8 +251,12 @@ function gui.getFiles(directory)
     for _, f in pairs(allItems) do
         local fullpath = directory .. "/" .. f
         if love.filesystem.isFile(fullpath) then
-            local modtime, errormsg = love.filesystem.getLastModified(fullpath)
-            table.insert(files, {filename=f, modtime=os.date("%c", modtime) or errormsg})
+            local info = love.filesystem.info(fullpath)
+            if info then
+            	table.insert(files, {filename=f, modtime=os.date("%c", info.modtime)})
+            else
+            	table.insert(files, {filename=f, modtime="Unknown"})
+            end
         end
     end
     return files
