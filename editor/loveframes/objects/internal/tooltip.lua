@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.tooltip"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- tooltip clas
 local newobject = loveframes.NewObject("tooltip", "loveframes_object_tooltip", true)
@@ -25,7 +24,6 @@ function newobject:initialize(object, text)
 	self.xoffset = 10
 	self.yoffset = -10
 	self.internal = true
-	self.show = false
 	self.followcursor = true
 	self.followobject = false
 	self.alwaysupdate = true
@@ -40,9 +38,10 @@ function newobject:initialize(object, text)
 	table.insert(self.internals, textobject)
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
+	loveframes.ApplyTemplatesToObject(self)
 	table.insert(loveframes.base.internals, self)
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -82,17 +81,15 @@ function newobject:update(dt)
 			self:Remove()
 			return
 		end
-		local ovisible = object.visible
+		--local ovisible = object.visible
 		local ohover = object.hover
 		local ostate = object.state
 		if ostate ~= state then
-			self.show = false
 			self.visible = false
 			return
 		end
-		self.show = ohover
-		self.visible = ovisible
-		if ohover and ovisible then
+		self.visible = ohover
+		if ohover then
 			local top = self:IsTopInternal()
 			local followcursor = self.followcursor
 			local followobject = self.followobject
@@ -116,7 +113,7 @@ function newobject:update(dt)
 		end
 	end
 	
-	textobject:SetVisible(self.show)
+	--textobject:SetVisible(self.show)
 	textobject:SetState(selfstate)
 	textobject:update(dt)
 	
@@ -124,51 +121,6 @@ function newobject:update(dt)
 		update(self, dt)
 	end
 
-end
-
---[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local internals = self.internals
-	local textobject = internals[1]
-	local show = self.show
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawToolTip or skins[defaultskin].DrawToolTip
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-	
-	if show then
-		if draw then
-			draw(self)
-		else
-			drawfunc(self)
-		end
-		textobject:draw()
-	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -394,4 +346,7 @@ function newobject:GetFollowObject()
 
 	return self.followobject
 	
+end
+
+---------- module end ----------
 end

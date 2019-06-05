@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.base"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- base object
 local newobject = loveframes.NewObject("base", "loveframes_object_base")
@@ -15,14 +14,8 @@ local newobject = loveframes.NewObject("base", "loveframes_object_base")
 	- desc: initializes the element
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
-	-- width and height of the window
-	local w = love.graphics.getWidth()
-	local h = love.graphics.getHeight()
-	
 	self.type = "base"
-	self.width = w
-	self.height = h
+	self.width, self.height = love.graphics.getDimensions()
 	self.internal = true
 	self.children = {}
 	self.internals = {}
@@ -34,11 +27,7 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
@@ -53,16 +42,18 @@ function newobject:update(dt)
 	end
 	
 	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			v:update(dt)
+		end
+	end
+	
 	local internals = self.internals
-	
-	for k, v in ipairs(children) do
-		v:update(dt)
+	if internals then
+		for k, v in ipairs(internals) do
+			v:update(dt)
+		end
 	end
-	
-	for k, v in ipairs(internals) do
-		v:update(dt)
-	end
-
 end
 
 --[[---------------------------------------------------------
@@ -70,28 +61,39 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local children = self.children
-	local internals = self.internals
+	if not self.visible then
+		return
+	end
 	
-	-- set the object's draw order
 	self:SetDrawOrder()
 	
-	for k, v in ipairs(children) do
-		v:draw()
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
+		drawfunc(self)
 	end
 	
-	for k, v in ipairs(internals) do
-		v:draw()
+	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			v:draw()
+		end
 	end
-
+	
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			v:draw()
+		end
+	end
+	
+	drawfunc = self.DrawOver or self.drawoverfunc
+	if drawfunc then
+		drawfunc(self)
+	end
 end
 
 --[[---------------------------------------------------------
@@ -99,34 +101,27 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
+	if not self.visible then
+		return
+	end
+	
 	local children = self.children
-	local internals = self.internals
-	
-	if not visible then
-		return
-	end
-	
 	if children then
 		for k, v in ipairs(children) do
 			v:mousepressed(x, y, button)
 		end
 	end
 	
+	local internals = self.internals
 	if internals then
 		for k, v in ipairs(internals) do
 			v:mousepressed(x, y, button)
 		end
 	end
-
 end
 
 --[[---------------------------------------------------------
@@ -134,34 +129,55 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
+	if not self.visible then
+		return
+	end
+	
 	local children = self.children
-	local internals = self.internals
-	
-	if not visible then
-		return
-	end
-	
 	if children then
 		for k, v in ipairs(children) do
 			v:mousereleased(x, y, button)
 		end
 	end
 	
+	local internals = self.internals
 	if internals then
 		for k, v in ipairs(internals) do
 			v:mousereleased(x, y, button)
 		end
 	end
+end
 
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the player moves a mouse wheel
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+	if loveframes.state ~= self.state then
+		return
+	end
+	
+	if not self.visible then
+		return
+	end
+	
+	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			v:wheelmoved(x, y)
+		end
+	end
+	
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			v:wheelmoved(x, y)
+		end
+	end
 end
 
 --[[---------------------------------------------------------
@@ -169,34 +185,27 @@ end
 	- desc: called when the player presses a key
 --]]---------------------------------------------------------
 function newobject:keypressed(key, isrepeat)
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
+	if not self.visible then
+		return
+	end
+	
 	local children = self.children
-	local internals = self.internals
-	
-	if not visible then
-		return
-	end
-	
 	if children then
 		for k, v in ipairs(children) do
-			v:keypressed(key, unicode)
+			v:keypressed(key, isrepeat)
 		end
 	end
 	
+	local internals = self.internals
 	if internals then
 		for k, v in ipairs(internals) do
-			v:keypressed(key, unicode)
+			v:keypressed(key, isrepeat)
 		end
 	end
-
 end
 
 --[[---------------------------------------------------------
@@ -204,69 +213,56 @@ end
 	- desc: called when the player releases a key
 --]]---------------------------------------------------------
 function newobject:keyreleased(key)
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
+	if not self.visible then
+		return
+	end
+	
 	local children = self.children
-	local internals = self.internals
-	
-	if not visible then
-		return
-	end
-	
 	if children then
 		for k, v in ipairs(children) do
 			v:keyreleased(key)
 		end
 	end
 	
+	local internals = self.internals
 	if internals then
 		for k, v in ipairs(internals) do
 			v:keyreleased(key)
 		end
 	end
-
 end
+
 
 --[[---------------------------------------------------------
 	- func: textinput(text)
 	- desc: called when the user inputs text
 --]]---------------------------------------------------------
 function newobject:textinput(text)
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
+	if not self.visible then
+		return
+	end
+	
 	local children = self.children
-	local internals = self.internals
-	
-	if not visible then
-		return
-	end
-	
 	if children then
 		for k, v in ipairs(children) do
 			v:textinput(text)
 		end
 	end
 	
+	local internals = self.internals
 	if internals then
 		for k, v in ipairs(internals) do
 			v:textinput(text)
 		end
 	end
-
 end
 
 
@@ -753,7 +749,7 @@ function newobject:InClickBounds()
 	local bounds = self.clickbounds
 	
 	if bounds then
-		local col = loveframes.util.BoundingBox(x, bounds.x, y, bounds.y, 1, bounds.width, 1, bounds.height)
+		local col = loveframes.BoundingBox(x, bounds.x, y, bounds.y, 1, bounds.width, 1, bounds.height)
 		return col
 	else
 		return false
@@ -794,7 +790,7 @@ function newobject:CheckHover()
 	local width = self.width
 	local height = self.height
 	local mx, my = love.mouse.getPosition()
-	local selfcol = loveframes.util.BoundingBox(mx, x, my, y, 1, width, 1, height)
+	local selfcol = loveframes.BoundingBox(mx, x, my, y, 1, width, 1, height)
 	local collisioncount = loveframes.collisioncount
 	local curstate = loveframes.state
 	local state = self.state
@@ -813,7 +809,7 @@ function newobject:CheckHover()
 				local cy = clickbounds.y
 				local cwidth = clickbounds.width
 				local cheight = clickbounds.height
-				local clickcol = loveframes.util.BoundingBox(mx, cx, my, cy, 1, cwidth, 1, cheight)
+				local clickcol = loveframes.BoundingBox(mx, cx, my, cy, 1, cwidth, 1, cheight)
 				if clickcol then
 					table.insert(loveframes.collisions, self)
 				end
@@ -905,7 +901,7 @@ end
 --]]---------------------------------------------------------
 function newobject:IsTopList()
 
-	local cols = loveframes.util.GetCollisions()
+	local cols = loveframes.GetCollisions()
 	local children = self:GetChildren()
 	local order = self.draworder
 	local top = true
@@ -993,6 +989,22 @@ function newobject:MoveToTop()
 end
 
 --[[---------------------------------------------------------
+	- func: SetDrawFunc()
+	- desc: sets the objects skin based draw function
+--]]---------------------------------------------------------
+function newobject:SetDrawFunc()
+	local skins = loveframes.skins
+	local activeskin  = skins[loveframes.config["ACTIVESKIN"]]
+	--local defaultskin = skins[loveframes.config["DEFAULTSKIN"]]
+	
+	local funcname = self.type
+	self.drawfunc = activeskin[funcname] -- or defaultskin[funcname]
+	
+	funcname = self.type .. "_over"
+	self.drawoverfunc = activeskin[funcname] -- or defaultskin[funcname]
+end
+
+--[[---------------------------------------------------------
 	- func: SetSkin(name)
 	- desc: sets the object's skin
 --]]---------------------------------------------------------
@@ -1002,6 +1014,13 @@ function newobject:SetSkin(name)
 	local internals = self.internals
 	
 	self.skin = name
+	
+	local selfskin = loveframes.skins[name]
+	
+	local funcname = self.type
+
+	self.drawfunc = selfskin[funcname]
+	self.drawoverfunc = selfskin[funcname.."_over"]
 	
 	if children then
 		for k, v in ipairs(children) do
@@ -1025,7 +1044,7 @@ end
 --]]---------------------------------------------------------
 function newobject:GetSkin()
 	
-	local skins = loveframes.skins.available
+	local skins = loveframes.skins
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
 	local selfskin = self.skin
@@ -1270,4 +1289,7 @@ function newobject:GetState()
 
 	return self.state
 	
+end
+
+---------- module end ----------
 end

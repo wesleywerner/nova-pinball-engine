@@ -76,27 +76,27 @@ end
 
 function pinball.drawWall (points)
     love.graphics.setLineWidth(6)
-    love.graphics.setColor(92, 201, 201)
+    love.graphics.setColor(92/256, 201/256, 201/256)
     love.graphics.line(points)
 end
 
 function pinball.drawBumper (tag, x, y, r)
     love.graphics.setLineWidth(2)
-    love.graphics.setColor(42, 161, 152)
+    love.graphics.setColor(42/256, 161/256, 152/256)
     love.graphics.circle("fill", x, y, r * 0.8)
-    love.graphics.setColor(108, 113, 196)
+    love.graphics.setColor(108/256, 113/256, 196/256)
     love.graphics.circle("line", x, y, r)
 end
 
 function pinball.drawKicker (tag, x, y, points)
     love.graphics.setLineWidth(1)
-    love.graphics.setColor(108, 196, 113)
+    love.graphics.setColor(108/256, 196/256, 113/256)
     love.graphics.polygon("fill", points)
 end
 
 function pinball.drawTrigger (tag, points)
     love.graphics.setLineWidth(1)
-    love.graphics.setColor(32, 32, 32)
+    love.graphics.setColor(32/256, 32/256, 32/256)
     love.graphics.polygon("fill", points)
 end
 
@@ -107,18 +107,18 @@ function pinball.drawFlipper (orientation, position, angle, origin, points)
     -- origin {x,y} is offset from the physics body center
     -- points {} are polygon vertices
 
-    love.graphics.setColor(108, 113, 196)
+    love.graphics.setColor(108/256, 113/256, 196/256)
     love.graphics.polygon("fill", points)
     love.graphics.setLineWidth(4)
-    love.graphics.setColor(68, 73, 156)
+    love.graphics.setColor(68/256, 73/256, 156/256)
     love.graphics.polygon("line", points)
 end
 
 function pinball.drawBall (x, y, radius)
     love.graphics.setLineWidth(4)
-    love.graphics.setColor(238, 232, 213)
+    love.graphics.setColor(238/256, 232/256, 213/256)
     love.graphics.circle("fill", x, y, radius)
-    love.graphics.setColor(147, 161, 161)
+    love.graphics.setColor(147/256, 161/256, 161/256)
     love.graphics.circle("line", x, y, radius)
 end
 

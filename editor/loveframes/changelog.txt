@@ -1,4 +1,37 @@
 ================================================
+Version 11.2 - Alpha (Mar 6 - 2019)
+================================================
+[ADDED] New functions button.SetImage and button.GetImage
+[ADDED] LoveFrames Demo
+[ADDED] New Default skin with subskins
+
+[FIXED] Colors as numbers
+
+[CHANGED] Massive internal update and cleaning by ingsoc451 (https://love2d.org/forums/memberlist.php?mode=viewprofile&u=137519)
+[CHANGED] Require system
+[CHANGED] loveframes.util and loveframes.templates functions moved to loveframes
+[CHANGED] utf8 moved to third-party
+
+================================================
+Version 11.0 - Alpha (Apr 15 - 2018)
+================================================
+[FIXED] updated to LÖVE 11.0
+
+================================================
+Version 0.10.1 - Alpha (Nov 13 - 2016)
+================================================
+[ADDED] a new property: image.stretch (boolean)
+[ADDED] a new property: button.image (image) -- left aligned image
+[ADDED] new properties: button.groupIndex (int) and button.checked (boolean)
+[ADDED] new properties: imagebutton.groupIndex (int) and imagebutton.checked (boolean)
+[ADDED] a new property: checkbox.groupIndex
+[ADDED] a new function: wheelmoved
+
+[FIXED] textinput - Unicode support
+[FIXED] Update for LÖVE 0.10.1
+[FIXED] Update stencil calls
+
+================================================
 Version 0.10 - Alpha (Release Date TBD)
 ================================================
 [ADDED] a new object: tree

@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.checkbox"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- checkbox object
 local newobject = loveframes.NewObject("checkbox", "loveframes_object_checkbox", true)
@@ -15,12 +14,11 @@ local newobject = loveframes.NewObject("checkbox", "loveframes_object_checkbox",
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-
 	self.type = "checkbox"
 	self.width = 0
 	self.height = 0
-	self.boxwidth = 20
-	self.boxheight = 20
+	self.boxwidth = 16
+	self.boxheight = 16
 	self.font = loveframes.basicfont
 	self.checked = false
 	self.lastvalue = false
@@ -29,7 +27,9 @@ function newobject:initialize()
 	self.enabled = true
 	self.internals = {}
 	self.OnChanged = nil
+	self.groupIndex = 0
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -108,49 +108,6 @@ function newobject:update(dt)
 
 end
 
---[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawCheckBox or skins[defaultskin].DrawCheckBox
-	local draw = self.Draw
-	local internals = self.internals
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	for k, v in ipairs(internals) do
-		v:draw()
-	end
-	
-end
 
 --[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
@@ -173,7 +130,7 @@ function newobject:mousepressed(x, y, button)
 	
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -209,10 +166,22 @@ function newobject:mousereleased(x, y, button)
 	local checked = self.checked
 	local onchanged = self.OnChanged
 	
-	if hover and down and enabled and button == "l" then
+	if hover and down and enabled and button == 1 then
 		if checked then
-			self.checked = false
+			if self.groupIndex == 0 then self.checked = false end
 		else
+			if self.groupIndex ~= 0 then
+				local baseparent = self.parent
+				if baseparent then
+					for k, v in ipairs(baseparent.children) do
+						if v.groupIndex then
+							if v.groupIndex == self.groupIndex then
+								v.checked = false
+							end
+						end
+					end
+				end
+			end
 			self.checked = true
 		end
 		if onchanged then
@@ -234,7 +203,7 @@ function newobject:SetText(text)
 	if text ~= "" then
 		self.internals = {}
 		local textobject = loveframes.Create("text")
-		local skin = loveframes.util.GetActiveSkin()
+		local skin = loveframes.GetActiveSkin()
 		if not skin then
 			skin = loveframes.config["DEFAULTSKIN"]
 		end
@@ -454,4 +423,7 @@ function newobject:GetEnabled()
 
 	return self.enabled
 	
+end
+
+---------- module end ----------
 end

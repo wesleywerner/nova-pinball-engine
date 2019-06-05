@@ -1,4 +1,4 @@
-VERSION = "0.10"
+VERSION = "11.2"
 local states = require ("states")
 gui = require("gui")
 viewPositionX, viewPositionY = 150, -400
@@ -44,12 +44,12 @@ end
 
 function love.draw()
     if (states.current == states.startup or states.current == states.loading) then
-        love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(backgroundImage, 0, 0)
         love.graphics.draw(startupLogo, 50, screenHeight - startupLogo:getHeight())
         love.graphics.print("v"..VERSION)
     elseif (states.current == states.editor) then
-        love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(backgroundImage, 0, 0)
         love.graphics.translate(viewPositionX, viewPositionY)
         drawPinballComponents()
@@ -273,10 +273,10 @@ end
 function createGuidelineBackground ()
     backgroundImage = love.graphics.newCanvas()
     backgroundImage:renderTo(function()
-        love.graphics.clear({89, 157, 220, 255})
+        love.graphics.clear({89/256, 157/256, 220/256, 1})
         local gridSize = 10
         local width, height = love.graphics.getDimensions()
-        love.graphics.setColor(106, 165, 220)
+        love.graphics.setColor(106/256, 165/256, 220/256)
         love.graphics.setLineWidth(1)
         --love.graphics.setLineStyle("rough")
         for h = 0, height, gridSize do
@@ -290,7 +290,7 @@ end
 
 function drawTool ()
     love.graphics.setLineWidth (2)
-    love.graphics.setColor (255, 255, 255, 255)
+    love.graphics.setColor (1, 1, 1, 1)
     if (tool.vertices) then
         local vertii = toMouse (tool.vertices)
         love.graphics.line(vertii)
@@ -312,13 +312,13 @@ function drawSelectedComponent ()
                 selection.item.x-selection.item.w/2, selection.item.y-selection.item.h/2,
                 selection.item.w, selection.item.h)
             love.graphics.line (worldVertices)
-            love.graphics.setColor (255, 255, 255, 64)
+            love.graphics.setColor (1, 1, 1, 0.25)
             love.graphics.line(worldVertices)
             local worldVertices = toScreen (selection.original.x, selection.original.y, selection.original.vertices)
             love.graphics.line(worldVertices)
         elseif (selection.item.r) then
             love.graphics.circle("line", selection.item.x, selection.item.y, selection.item.r)
-            love.graphics.setColor (255, 255, 255, 64)
+            love.graphics.setColor (1, 1, 1, 0.25)
             love.graphics.circle("fill", selection.item.x, selection.item.y, selection.item.r)
             love.graphics.circle("fill", selection.original.x, selection.original.y, selection.original.r)
         elseif (selection.item.x and selection.item.w) then
@@ -329,7 +329,7 @@ function drawSelectedComponent ()
             love.graphics.rectangle ("line",
                 rx, ry,
                 selection.item.w, selection.item.h)
-            love.graphics.setColor (255, 255, 255, 64)
+            love.graphics.setColor (1, 1, 1, 0.25)
             love.graphics.rectangle ("fill",
                 rx, ry,
                 selection.item.w, selection.item.h)
@@ -346,14 +346,14 @@ end
 function drawPinballComponents ()
 
     love.graphics.setLineStyle("rough")
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(1, 1, 1, 1)
     
     for _, component in pairs(tableDef.components) do
 
         -- WALLS
         if (component.type == "wall") then
             love.graphics.setLineWidth (6)
-            love.graphics.setColor(255, 255, 255)
+            love.graphics.setColor(1, 1, 1)
             --love.graphics.polygon("line", toScreen (component.x, component.y, component.vertices))
             love.graphics.line(toScreen (component.x, component.y, component.vertices))
         end
@@ -361,42 +361,42 @@ function drawPinballComponents ()
         -- BUMPERS
         if (component.type == "bumper") then
             love.graphics.setLineWidth (2)
-            love.graphics.setColor(161, 42, 42)
+            love.graphics.setColor(161/256, 42/256, 42/256)
             love.graphics.circle("fill", component.x, component.y, component.r)
         end
 
         -- KICKERS
         if (component.type == "kicker") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(192, 192, 0)
+            love.graphics.setColor(0.75, 0.75, 0)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- TRIGGERS
         if (component.type == "trigger") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(0, 128, 0)
+            love.graphics.setColor(0, 0.5, 0)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- INDICATORS
         if (component.type == "indicator") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(0, 128, 128)
+            love.graphics.setColor(0, 0.5, 0.5)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- GATES
         if (component.type == "gate") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(0, 0, 128)
+            love.graphics.setColor(0, 0, 0.5)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- FLIPPERS
         if (component.type == "flipper") then
             love.graphics.setLineWidth (4)
-            love.graphics.setColor(108, 113, 196)
+            love.graphics.setColor(108/256, 113/256, 196/256)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
@@ -404,7 +404,7 @@ function drawPinballComponents ()
 
     -- BALL
     love.graphics.setLineWidth (1)
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.circle("fill", tableDef.ball.x, tableDef.ball.y, tableDef.ball.r)
 
 end
@@ -1025,7 +1025,7 @@ function exportBitmap()
     local size = calculateTableSize()
     local canvas = love.graphics.newCanvas(size.width+40, size.height)
     love.graphics.setCanvas(canvas)
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(1, 1, 1, 1)
     local border = 20
     love.graphics.translate(-math.abs(size.x1)+border, math.abs(size.y1)+border)
     drawPinballComponents()

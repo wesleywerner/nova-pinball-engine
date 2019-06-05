@@ -2,7 +2,7 @@
 
 ## Information
 
-Love Frames is a GUI library for [LÖVE](https://love2d.org/). Information on installation and usage can be found in the [documentation](https://github.com/KennyShields/LoveFrames/wiki). A demo of the library can be found at: https://github.com/KennyShields/LoveFrames-demo
+Love Frames is a GUI library for [LÃ–VE](https://love2d.org/).
 
 ## License
 
@@ -12,6 +12,16 @@ Love Frames is licensed under the zlib/libpng license. For more information, ple
 
 Created by Kenny Shields
 
-**Third-Party Libraries**
+## Third-Party Libraries
 
-- middleclass by kikito - https://github.com/kikito/middleclass
+middleclass - https://github.com/kikito/middleclass
+
+utf8.lua - https://github.com/Stepets/utf8.lua
+
+
+tween.lua - https://github.com/kikito/tween.lua (Demo)
+
+## History
+
+[Changelog](https://github.com/linux-man/LoveFrames/blob/master/loveframes/changelog.txt)
+

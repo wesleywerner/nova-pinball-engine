@@ -6,9 +6,9 @@ Created by Wesley "keyboard monkey" Werner
 
 # Good to know
 
-+ Written against LÖVE `0.10.1`.
++ Written against LÖVE `11.2`.
 + Makes heavy use of the LÖVE physics module.
-+ The table editor uses the [Love Frames library by KennyShields](https://github.com/KennyShields/LoveFrames)
++ The table editor uses the [Love Frames library by KennyShields](https://github.com/linux-man/LoveFrames), currently maintained by [linux-man](https://github.com/linux-man/).
 + Powered by kittens.
 + `main.lua` is an example pinball game that shows how to get up and running.
 

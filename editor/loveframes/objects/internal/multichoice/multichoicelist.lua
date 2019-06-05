@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.multichoice.multichoicelist"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- multichoicelist class
 local newobject = loveframes.NewObject("multichoicelist", "loveframes_object_multichoicelist", true)
@@ -49,8 +48,8 @@ function newobject:initialize(object)
 	table.insert(loveframes.base.internals, self)
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -78,7 +77,7 @@ function newobject:update(dt)
 	local width = love.graphics.getWidth()
 	local height = love.graphics.getHeight()
 	local x, y = love.mouse.getPosition()
-	local selfcol = loveframes.util.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, self.height)
+	local selfcol = loveframes.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, self.height)
 	local parent = self.parent
 	local base = loveframes.base
 	local upadte = self.Update
@@ -128,68 +127,52 @@ end
 	- func: draw()
 	- desc: draws the object
 --]]---------------------------------------------------------
+--[[
 function newobject:draw()
-
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
-	
-	if not visible then
+	if not self.visible then
 		return
 	end
 	
-	local x = self.x
-	local y = self.y
-	local width = self.width
-	local height = self.height
-	local stencilfunc = function() love.graphics.rectangle("fill", x, y, width, height) end
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawMultiChoiceList or skins[defaultskin].DrawMultiChoiceList
-	local drawoverfunc = skin.DrawOverMultiChoiceList or skins[defaultskin].DrawOverMultiChoiceList
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	local internals = self.internals
-	local children = self.children
-	
-	-- set the object's draw order
 	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
+	
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
-		
-	for k, v in ipairs(internals) do
-		v:draw()
-	end
-		
-	love.graphics.setStencil(stencilfunc)
-		
-	for k, v in ipairs(children) do
-		local col = loveframes.util.BoundingBox(self.x, v.x, self.y, v.y, self.width, v.width, self.height, v.height)
-		if col then
+	
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
 			v:draw()
 		end
 	end
-		
-	love.graphics.setStencil()
 	
-	if not draw then
-		drawoverfunc(self)
+	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
+	
+	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			local col = loveframes.BoundingBox(self.x, v.x, self.y, v.y, self.width, v.width, self.height, v.height)
+			if col then
+				v:draw()
+			end
+		end
+	end
+	
+	love.graphics.setStencilTest()
+	
+	drawfunc = self.DrawOver or self.drawoverfunc
+	if drawfunc then
+		drawfunc(self)
 	end
 	
 end
-
+--]]
 --[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
@@ -209,33 +192,12 @@ function newobject:mousepressed(x, y, button)
 		return
 	end
 	
-	local selfcol = loveframes.util.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, self.height)
-	local toplist = self:IsTopList()
+	local selfcol = loveframes.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, self.height)
 	local internals = self.internals
 	local children = self.children
-	local scrollamount = self.mousewheelscrollamount
 	
-	if not selfcol and self.canremove and button == "l" then
+	if not selfcol and self.canremove and button == 1 then
 		self:Close()
-	end
-	
-	if self.vbar and toplist then
-		local bar = internals[1].internals[1].internals[1]
-		local dtscrolling = self.dtscrolling
-		if dtscrolling then
-			local dt = love.timer.getDelta()
-			if button == "wu" then
-				bar:Scroll(-scrollamount * dt)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount * dt)
-			end
-		else
-			if button == "wu" then
-				bar:Scroll(-scrollamount)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount)
-			end
-		end
 	end
 	
 	for k, v in ipairs(internals) do
@@ -278,6 +240,29 @@ function newobject:mousereleased(x, y, button)
 	
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
+	end
+
+end
+
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the player moves a mouse wheel
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local toplist = self:IsTopList()
+	local internals = self.internals
+	local scrollamount = self.mousewheelscrollamount
+
+	if self.vbar and toplist then
+		local bar = internals[1].internals[1].internals[1]
+		local dtscrolling = self.dtscrolling
+		if dtscrolling then
+			local dt = love.timer.getDelta()
+			bar:Scroll(-y * scrollamount * dt)
+		else
+			bar:Scroll(-y * scrollamount)
+		end
 	end
 
 end
@@ -429,4 +414,7 @@ function newobject:Close()
 	self:Remove()
 	self.list.haslist = false
 	
+end
+
+---------- module end ----------
 end

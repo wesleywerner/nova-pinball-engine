@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.columnlist.columnlistheader"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- columnlistheader class
 local newobject = loveframes.NewObject("columnlistheader", "loveframes_object_columnlistheader", true)
@@ -55,8 +54,8 @@ function newobject:initialize(name, parent)
 	end
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -123,36 +122,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	if not self.visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawColumnListHeader or skins[defaultskin].DrawColumnListHeader
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -160,16 +129,16 @@ function newobject:mousepressed(x, y, button)
 	
 	if not self.parent.resizecolumn and self.parent.canresizecolumns then
 		local box = self.resizebox
-		local col = loveframes.util.BoundingBox(x, box.x, y, box.y, 1, box.width, 1, box.height)
+		local col = loveframes.BoundingBox(x, box.x, y, box.y, 1, box.width, 1, box.height)
 		if col then
 			self.resizing = true
 			self.parent.resizecolumn = self
 		end
 	end
 	
-	if self.hover and button == "l" then
+	if self.hover and button == 1 then
 		local baseparent = self:GetBaseParent()
-		if baseparent and baseparent.type == "frame" and button == "l" then
+		if baseparent and baseparent.type == "frame" and button == 1 then
 			baseparent:MakeTop()
 		end
 		self.down = true
@@ -194,7 +163,7 @@ function newobject:mousereleased(x, y, button)
 	local enabled = self.enabled
 	local onclick = self.OnClick
 	
-	if hover and down and clickable and button == "l" then
+	if hover and down and clickable and button == 1 then
 		if enabled then
 			onclick(self, x, y)
 		end
@@ -228,4 +197,7 @@ function newobject:GetName()
 
 	return self.name
 	
+end
+
+---------- module end ----------
 end

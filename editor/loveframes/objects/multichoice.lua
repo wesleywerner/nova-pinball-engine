@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.multichoice"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- multichoice object
 local newobject = loveframes.NewObject("multichoice", "loveframes_object_multichoice", true)
@@ -33,6 +32,7 @@ function newobject:initialize()
 	self.choices = {}
 	self.listheight = nil
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -76,45 +76,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawMultiChoice or skins[defaultskin].DrawMultiChoice
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -137,7 +98,7 @@ function newobject:mousepressed(x, y, button)
 	local haslist = self.haslist
 	local enabled = self.enabled
 	
-	if hover and not haslist and enabled and button == "l" then
+	if hover and not haslist and enabled and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -451,4 +412,7 @@ function newobject:GetEnabled()
 
 	return self.enabled
 	
+end
+
+---------- module end ----------
 end

@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.scrollable.scrollbar"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- scrollbar class
 local newobject = loveframes.NewObject("scrollbar", "loveframes_object_scrollbar", true)
@@ -47,8 +46,8 @@ function newobject:initialize(parent, bartype)
 	end
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -84,7 +83,6 @@ function newobject:update(dt)
 		local parent = self.parent
 		local listo = parent.parent.parent
 		local height = parent.height * (listo.height/listo.itemheight)
-		local update = self.Update
 		if height < 20 then
 			self.height = 20
 		else
@@ -183,41 +181,8 @@ function newobject:update(dt)
 		end
 	end
 	
-	if update then
-		update(self, dt)
-	end
-	
-end
-
---[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawScrollBar or skins[defaultskin].DrawScrollBar
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
+	local update = self.Update
+	if update then update(self, dt) end
 	
 end
 
@@ -247,7 +212,7 @@ function newobject:mousepressed(x, y, button)
 	local dragging = self.dragging
 	
 	if not dragging then
-		if button == "l" then
+		if button == 1 then
 			self.starty = self.staticy
 			self.startx = self.staticx
 			self.clickx = x
@@ -387,4 +352,7 @@ function newobject:GetBarType()
 
 	return self.bartype
 	
+end
+
+---------- module end ----------
 end

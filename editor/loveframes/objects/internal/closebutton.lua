@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.closebutton"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- closebutton class
 local newobject = loveframes.NewObject("closebutton", "loveframes_object_closebutton", true)
@@ -26,8 +25,9 @@ function newobject:initialize()
 	self.OnClick = function() end
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
+	loveframes.ApplyTemplatesToObject(self)
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -84,37 +84,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawCloseButton or skins[defaultskin].DrawCloseButton
-	local draw = self.Draw
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -128,7 +97,7 @@ function newobject:mousepressed(x, y, button)
 	
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -155,7 +124,7 @@ function newobject:mousereleased(x, y, button)
 	local onclick = self.OnClick
 	
 	if hover and self.down then
-		if button == "l" then
+		if button == 1 then
 			onclick(x, y, self)
 		end
 	end
@@ -184,4 +153,7 @@ function newobject:GetAutoPosition()
 
 	return self.autoposition
 	
+end
+
+---------- module end ----------
 end

@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.grid"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- grid object
 local newobject = loveframes.NewObject("grid", "loveframes_object_grid", true)
@@ -30,6 +29,7 @@ function newobject:initialize()
 	self.children = {}
 	self.OnSizeChanged = nil
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -91,54 +91,9 @@ function newobject:update(dt)
 		v:update(dt)
 	end
 	
-	if update then
-		update(self, dt)
-	end
+	local update = self.Update
+	if update then update(self, dt) end
 
-end
-
---[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawGrid or skins[defaultskin].DrawGrid
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	local children = self.children
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	for k, v in ipairs(children) do
-		v:draw()
-	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -163,7 +118,7 @@ function newobject:mousepressed(x, y, button)
 	local children = self.children
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -397,4 +352,7 @@ function newobject:GetCellPadding()
 
 	return self.cellpadding
 	
+end
+
+---------- module end ----------
 end

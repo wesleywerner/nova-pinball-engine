@@ -36,7 +36,7 @@ function gui.createStatusbar ( )
     gui.statusbar:SetText("Welcome to the Nova Pinball table editor! Press F1 for shortcuts.")
 
     gui.toolName = loveframes.Create("text", statusPanel)
-    gui.toolName:SetDefaultColor(0, 0, 255)
+    gui.toolName:SetDefaultColor(0, 0, 1)
     gui.toolName:SetText("")
     gui.toolName:SetPos(screenWidth - 150, 5)
     gui.toolName:CenterX()

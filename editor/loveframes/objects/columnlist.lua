@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.columnlist"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- columnlist object
 local newobject = loveframes.NewObject("columnlist", "loveframes_object_columnlist", true)
@@ -41,6 +40,7 @@ function newobject:initialize()
 	local list = loveframes.objects["columnlistarea"]:new(self)
 	table.insert(self.internals, list)
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -101,21 +101,14 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
+	if loveframes.state ~= self.state then
+		return
+	end
 
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if not self.visible then
 		return
 	end
 	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local stencilfunc
 	local vbody = self.internals[1]:GetVerticalScrollBody()
 	local hbody = self.internals[1]:GetHorizontalScrollBody()
 	local width = self.width
@@ -129,37 +122,39 @@ function newobject:draw()
 		height = height - hbody.height
 	end
 	
-	local stencilfunc = function() love.graphics.rectangle("fill", self.x, self.y, width, height) end
-	local children = self.children
-	local internals = self.internals
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawColumnList or skins[defaultskin].DrawColumnList
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
+	local stencilfunc = function()
+		love.graphics.rectangle("fill", self.x, self.y, width, height)
+	end
 	
 	-- set the object's draw order
 	self:SetDrawOrder()
 		
-	if draw then
-		draw(self)
-	else
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
 	
-	for k, v in ipairs(internals) do
-		v:draw()
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			v:draw()
+		end
 	end
 	
 	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
 	
-	for k, v in ipairs(children) do
-		v:draw()
+	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			v:draw()
+		end
 	end
 	
+	local drawfunc = self.DrawOver or self.drawoverfunc
+	if drawfunc then
+		drawfunc(self)
+	end
 	love.graphics.setStencilTest()
 
 end
@@ -187,7 +182,7 @@ function newobject:mousepressed(x, y, button)
 	local children  = self.children
 	local internals = self.internals
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -983,4 +978,7 @@ function newobject:SetColumnOrder(curid, newid)
 	
 	return self
 	
+end
+
+---------- module end ----------
 end

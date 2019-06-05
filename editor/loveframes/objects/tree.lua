@@ -3,11 +3,10 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.tree"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
--- button object
+-- tree object
 local newobject = loveframes.NewObject("tree", "loveframes_object_tree", true)
 
 --[[---------------------------------------------------------
@@ -34,6 +33,7 @@ function newobject:initialize()
 	self.children = {}
 	self.internals = {}
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -158,28 +158,14 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
-	
-	if not visible then
+	if not self.visible then
 		return
 	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawTree or skins[defaultskin].DrawTree
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
+	
 	local stencilfunc
 	
 	if self.vbar and not self.hbar then
@@ -190,25 +176,30 @@ function newobject:draw()
 		stencilfunc = function() love.graphics.rectangle("fill", self.x, self.y, self.width - 16, self.height - 16) end
 	end
 	
-	-- set the object's draw order
 	self:SetDrawOrder()
 	
-	love.graphics.setStencil(stencilfunc)
+	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
 	
-	if draw then
-		draw(self)
-	else
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
 	
-	for k, v in ipairs(self.children) do
-		v:draw()
+	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			v:draw()
+		end
 	end
 	
-	love.graphics.setStencil()
+	love.graphics.setStencilTest()
 	
-	for k, v in ipairs(self.internals) do
-		v:draw()
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			v:draw()
+		end
 	end
 	
 end
@@ -345,4 +336,7 @@ function newobject:GetHorizontalScrollBody()
 	
 	return item
 
+end
+
+---------- module end ----------
 end

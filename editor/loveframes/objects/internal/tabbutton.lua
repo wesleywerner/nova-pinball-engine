@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.tabbutton"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- tabbutton class
 local newobject = loveframes.NewObject("tabbutton", "loveframes_object_tabbutton", true)
@@ -52,8 +51,9 @@ function newobject:initialize(parent, text, tabnumber, tip, image, onopened, onc
 	end
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
+	loveframes.ApplyTemplatesToObject(self)
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -85,38 +85,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	if not self.visible then
-		return
-	end
-	
-	local image = self.image
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawTabButton or skins[defaultskin].DrawTabButton
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	local internals = self.internals
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-	
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -131,7 +99,7 @@ function newobject:mousepressed(x, y, button)
 	local hover = self.hover
 	local internals = self.internals
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -158,8 +126,8 @@ function newobject:mousereleased(x, y, button)
 	local parent = self.parent
 	local tabnumber = self.tabnumber
 	
-	if hover and button == "l" then
-		if button == "l" then
+	if hover and button == 1 then
+		if button == 1 then
 			local tab = parent.tab
 			local internals = parent.internals
 			local onopened = self.OnOpened
@@ -207,10 +175,10 @@ function newobject:SetImage(image)
 
 	if type(image) == "string" then
 		self.image = love.graphics.newImage(image)
+		self.image:setFilter("nearest", "nearest")
 	else
 		self.image = image
 	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -231,4 +199,7 @@ function newobject:GetTabNumber()
 
 	return self.tabnumber
 	
+end
+
+---------- module end ----------
 end

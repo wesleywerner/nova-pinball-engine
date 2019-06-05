@@ -1,6 +1,6 @@
 function love.conf(t)
     t.identity = "nova-pinball"
-    t.version = "0.10.1"
+    t.version = "11.2"
     t.console = false
     t.window.title = "Nova Pinball Table Editor"
     t.window.width = 1000
