@@ -1,2 +1,3 @@
 # The engine module is symlinked into the example directory.
 example/nova-pinball-engine
+example/init.lua

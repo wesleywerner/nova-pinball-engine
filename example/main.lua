@@ -23,7 +23,10 @@
 
 -- This example shows the bare minimum to get a pinball game up and running.
 
-local pinball = require("nova-pinball-engine")
+-- Requiring "." loads init.lua from this example directory.
+-- For better organization you can place the engine in `nova-pinball-engine\init.lua`
+-- and require("nova-pinball-engine").
+local pinball = require(".")
 
 function love.load()
 
@@ -134,8 +137,8 @@ function pinball.tagContact(tag, id)
 
     -- Demonstrates locking the ball in place for a short period
     -- before ejecting it back into play.
-    if (tag == "hole") then
-        local x, y = pinball:getObjectXY("hole")
+    if (tag == "black hole") then
+        local x, y = pinball:getObjectXY("black hole")
         local secondsDelay = 1
         local releaseXVelocity = 500
         local releaseYVelocity = 500

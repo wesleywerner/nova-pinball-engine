@@ -4,6 +4,8 @@ A pinball simulator written in LÖVE.
 
 Created by Wesley "keyboard monkey" Werner
 
+With contributions by [Eric Ahnell](https://github.com/wrldwzrd89).
+
 # Good to know
 
 + Written against LÖVE `11.2`.
@@ -14,11 +16,13 @@ Created by Wesley "keyboard monkey" Werner
 
 # Running the example
 
-The example needs the engine to run. Symlink or copy `nova-pinball-engine/` into the `example` directory then running `love example`
+- Copy init.lua into the `example` directory
+- Run `love --console .` from within the example directory
+- Left/Right shift controls the flippers. Spacebar releases more balls.
 
 # LICENSE
 
-Copyleft 2015
+Copyleft 2015 - 2021
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
