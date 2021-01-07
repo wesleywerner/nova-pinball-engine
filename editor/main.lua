@@ -1,4 +1,4 @@
-VERSION = "0.10"
+VERSION = "11.2"
 local states = require ("states")
 gui = require("gui")
 viewPositionX, viewPositionY = 150, -400
@@ -44,12 +44,12 @@ end
 
 function love.draw()
     if (states.current == states.startup or states.current == states.loading) then
-        love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(backgroundImage, 0, 0)
         love.graphics.draw(startupLogo, 50, screenHeight - startupLogo:getHeight())
         love.graphics.print("v"..VERSION)
     elseif (states.current == states.editor) then
-        love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(backgroundImage, 0, 0)
         love.graphics.translate(viewPositionX, viewPositionY)
         drawPinballComponents()
@@ -227,31 +227,31 @@ end
 
 -- This tool places a polygon shape. The tool type determines where
 -- it gets stored in the pinball table definition.
-function usePolyTool (button)
+function usePolyTool(button)
     tool = button.data
     --gui.setCursor(button.data.icon)
     gui.setTool(tool.text .. " Tool")
 end
 
-function usePlaceBallTool ()
+function usePlaceBallTool()
     tool = { type="ball" }
     gui.setTool("Place Ball")
 end
 
-function useSelectTool ()
+function useSelectTool()
     tool = { type="select" }
     gui.setTool("Select Tool")
     gui.setCursor()
 end
 
-function unselect ()
+function unselect()
     selection.item = nil
     gui.setCursor()
     showSelectionStatus()
     gui.setComponentCyclerItems()
 end
 
-function deleteSelected ()
+function deleteSelected()
     if (selection.item) then
         createUndoPoint()
         table.remove (tableDef.components, selection.idx)
@@ -260,7 +260,7 @@ function deleteSelected ()
     end
 end
 
-function moveSelectedComponent ()
+function moveSelectedComponent()
     if (selection.item and selection.canMove and love.mouse.isDown(1)) then
         local x, y = getMouse ()
         x = x + selection.xOffset
@@ -270,13 +270,13 @@ function moveSelectedComponent ()
     end
 end
 
-function createGuidelineBackground ()
+function createGuidelineBackground()
     backgroundImage = love.graphics.newCanvas()
     backgroundImage:renderTo(function()
-        love.graphics.clear({89, 157, 220, 255})
+        love.graphics.clear({89/256, 157/256, 220/256, 1})
         local gridSize = 10
         local width, height = love.graphics.getDimensions()
-        love.graphics.setColor(106, 165, 220)
+        love.graphics.setColor(106/256, 165/256, 220/256)
         love.graphics.setLineWidth(1)
         --love.graphics.setLineStyle("rough")
         for h = 0, height, gridSize do
@@ -288,9 +288,9 @@ function createGuidelineBackground ()
     end)
 end
 
-function drawTool ()
+function drawTool()
     love.graphics.setLineWidth (2)
-    love.graphics.setColor (255, 255, 255, 255)
+    love.graphics.setColor (1, 1, 1, 1)
     if (tool.vertices) then
         local vertii = toMouse (tool.vertices)
         love.graphics.line(vertii)
@@ -300,7 +300,7 @@ function drawTool ()
     end
 end
 
-function drawSelectedComponent ()
+function drawSelectedComponent()
     if (selection.item) then
         love.graphics.setColor (0, 0, 0)
         love.graphics.setLineWidth (1)
@@ -312,13 +312,13 @@ function drawSelectedComponent ()
                 selection.item.x-selection.item.w/2, selection.item.y-selection.item.h/2,
                 selection.item.w, selection.item.h)
             love.graphics.line (worldVertices)
-            love.graphics.setColor (255, 255, 255, 64)
+            love.graphics.setColor (1, 1, 1, 0.25)
             love.graphics.line(worldVertices)
             local worldVertices = toScreen (selection.original.x, selection.original.y, selection.original.vertices)
             love.graphics.line(worldVertices)
         elseif (selection.item.r) then
             love.graphics.circle("line", selection.item.x, selection.item.y, selection.item.r)
-            love.graphics.setColor (255, 255, 255, 64)
+            love.graphics.setColor (1, 1, 1, 0.25)
             love.graphics.circle("fill", selection.item.x, selection.item.y, selection.item.r)
             love.graphics.circle("fill", selection.original.x, selection.original.y, selection.original.r)
         elseif (selection.item.x and selection.item.w) then
@@ -329,7 +329,7 @@ function drawSelectedComponent ()
             love.graphics.rectangle ("line",
                 rx, ry,
                 selection.item.w, selection.item.h)
-            love.graphics.setColor (255, 255, 255, 64)
+            love.graphics.setColor (1, 1, 1, 0.25)
             love.graphics.rectangle ("fill",
                 rx, ry,
                 selection.item.w, selection.item.h)
@@ -343,17 +343,17 @@ function drawSelectedComponent ()
     end
 end
 
-function drawPinballComponents ()
+function drawPinballComponents()
 
     love.graphics.setLineStyle("rough")
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(1, 1, 1, 1)
     
     for _, component in pairs(tableDef.components) do
 
         -- WALLS
         if (component.type == "wall") then
             love.graphics.setLineWidth (6)
-            love.graphics.setColor(255, 255, 255)
+            love.graphics.setColor(1, 1, 1)
             --love.graphics.polygon("line", toScreen (component.x, component.y, component.vertices))
             love.graphics.line(toScreen (component.x, component.y, component.vertices))
         end
@@ -361,42 +361,42 @@ function drawPinballComponents ()
         -- BUMPERS
         if (component.type == "bumper") then
             love.graphics.setLineWidth (2)
-            love.graphics.setColor(161, 42, 42)
+            love.graphics.setColor(161/256, 42/256, 42/256)
             love.graphics.circle("fill", component.x, component.y, component.r)
         end
 
         -- KICKERS
         if (component.type == "kicker") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(192, 192, 0)
+            love.graphics.setColor(0.75, 0.75, 0)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- TRIGGERS
         if (component.type == "trigger") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(0, 128, 0)
+            love.graphics.setColor(0, 0.5, 0)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- INDICATORS
         if (component.type == "indicator") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(0, 128, 128)
+            love.graphics.setColor(0, 0.5, 0.5)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- GATES
         if (component.type == "gate") then
             love.graphics.setLineWidth (1)
-            love.graphics.setColor(0, 0, 128)
+            love.graphics.setColor(0, 0, 0.5)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
         -- FLIPPERS
         if (component.type == "flipper") then
             love.graphics.setLineWidth (4)
-            love.graphics.setColor(108, 113, 196)
+            love.graphics.setColor(108/256, 113/256, 196/256)
             love.graphics.polygon("fill", toScreen (component.x, component.y, component.vertices))
         end
 
@@ -404,18 +404,18 @@ function drawPinballComponents ()
 
     -- BALL
     love.graphics.setLineWidth (1)
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.circle("fill", tableDef.ball.x, tableDef.ball.y, tableDef.ball.r)
 
 end
 
-function toGrid (v)
+function toGrid(v)
     local gridSize = 10
     return math.floor(v/gridSize) * gridSize
 end
 
 -- Get the mouse coordinates snapped to a grid
-function getMouse ()
+function getMouse()
     local x, y = love.mouse.getPosition()
     if (not love.keyboard.isDown("lctrl")) then
         x = toGrid (x)
@@ -425,7 +425,7 @@ function getMouse ()
 end
 
 -- translate points relative to the mouse coordinates
-function toMouse (vertices)
+function toMouse(vertices)
     local x, y = getMouse ()
     local mx = { }
     for i = 1, #vertices - 1, 2 do
@@ -436,7 +436,7 @@ function toMouse (vertices)
 end
 
 -- translate relative vertice positions to screen coordinates
-function toScreen (x, y, vertices)
+function toScreen(x, y, vertices)
     local mx = { }
     for i = 1, #vertices - 1, 2 do
         table.insert(mx, vertices[i] + x)
@@ -445,7 +445,7 @@ function toScreen (x, y, vertices)
     return mx
 end
 
-function registerTools ()
+function registerTools()
 
     local tools = {
         {
@@ -691,7 +691,7 @@ function registerTools ()
 
 end
 
-function setComponentTag (tag)
+function setComponentTag(tag)
     if (selection.item) then
         createUndoPoint()
         selection.item.tag = tag
@@ -699,7 +699,7 @@ function setComponentTag (tag)
     end
 end
 
-function setComponentCooldown (cooldown)
+function setComponentCooldown(cooldown)
     if (selection.item) then
         createUndoPoint()
         selection.item.cooldown = cooldown
@@ -721,7 +721,7 @@ end
 -- TABLE DEFINITION
 
 
-function applySelection ()
+function applySelection()
     if (selection.item) then
         createUndoPoint()
         tableDef.components[selection.idx] = deepcopy(selection.item)
@@ -729,7 +729,7 @@ function applySelection ()
     end
 end
 
-function cloneObject ()
+function cloneObject()
     if (selection.item) then
         local newIdx = #tableDef.components+1
         tableDef.components[newIdx] = deepcopy(selection.item)
@@ -739,7 +739,7 @@ function cloneObject ()
     end
 end
 
-function scaleObject (xratio, yratio)
+function scaleObject(xratio, yratio)
     if (selection.item and selection.item.vertices) then
         selection.item.w = selection.item.w + (selection.item.w * xratio)
         selection.item.h = selection.item.h + (selection.item.h * yratio)
@@ -759,7 +759,7 @@ function scaleObject (xratio, yratio)
     end
 end
 
-function flipSelection (horizontal, vertical)
+function flipSelection(horizontal, vertical)
     if (selection.item and selection.item.vertices) then
         local vertices = selection.item.vertices
         local flipped = { }
@@ -774,7 +774,7 @@ function flipSelection (horizontal, vertical)
     end
 end
 
-function selectComponentAt (x, y)
+function selectComponentAt(x, y)
 
     gui.readComponentTag ("")
     gui.readComponentCooldown("")
@@ -841,7 +841,7 @@ function selectComponentAt (x, y)
     end
 end
 
-function selectComponentByIdx (button)
+function selectComponentByIdx(button)
     local i = button.data
     local c = tableDef.components[i]
     selection.item = deepcopy(c)
@@ -867,7 +867,7 @@ function showSelectionStatus()
 end
 
 -- gets the bounding box size of a poly
-function getPolySize (vertices)
+function getPolySize(vertices)
     local minx, maxx, miny, maxy = vertices[1], vertices[1], vertices[2], vertices[2]
     for i = 1, #vertices - 1, 2 do
         minx = math.min(minx, vertices[i])
@@ -879,7 +879,7 @@ function getPolySize (vertices)
     return math.max(10, maxx-minx), math.max(10, maxy-miny)
 end
 
-function placeVertices ()
+function placeVertices()
     local mousey = toScreen (-viewPositionX, -viewPositionY, {getMouse()})
     local polyW, polyH = getPolySize (tool.vertices)
     table.insert(tableDef.components, {
@@ -896,7 +896,7 @@ function placeVertices ()
     gui.status ("Placed a " .. tool.text)
 end
 
-function placeCircle ()
+function placeCircle()
     local mousey = toScreen (-viewPositionX, -viewPositionY, {getMouse()})
     if (tool.type == "bumper") then
         table.insert(tableDef.components, {
@@ -926,7 +926,7 @@ function deepcopy(orig)
     return copy
 end
 
-function createUndoPoint ()
+function createUndoPoint()
 
     hasUnsavedChanges = true
     
@@ -949,7 +949,7 @@ function createUndoPoint ()
 
 end
 
-function undo ()
+function undo()
     -- create a restore point to be able to return to the current state
     unselect()
     if (history.idx > #history.data) then
@@ -962,7 +962,7 @@ function undo ()
     end
 end
 
-function redo ()
+function redo()
     unselect()
     if (history.idx < #history.data) then
         history.idx = history.idx + 1
@@ -970,7 +970,7 @@ function redo ()
     end
 end
 
-function clearTableDefinition ()
+function clearTableDefinition()
     tableDef = {
         height = 1000,
         width = 650,
@@ -980,7 +980,7 @@ function clearTableDefinition ()
     history = { data={}, idx=0 }
 end
 
-function calculateTableSize ()
+function calculateTableSize()
     local minx, maxx, miny, maxy = 1000, -1000, 1000, -1000
     for _, v in pairs(tableDef.components) do
         if (v.vertices) then
@@ -1013,7 +1013,7 @@ end
 
 -- FILE OPERATIONS
 
-function checkSaveDirectory ()
+function checkSaveDirectory()
     local exists = love.filesystem.exists(saveDirectory)
     if (not exists) then
         love.filesystem.createDirectory(saveDirectory)
@@ -1025,7 +1025,7 @@ function exportBitmap()
     local size = calculateTableSize()
     local canvas = love.graphics.newCanvas(size.width+40, size.height)
     love.graphics.setCanvas(canvas)
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(1, 1, 1, 1)
     local border = 20
     love.graphics.translate(-math.abs(size.x1)+border, math.abs(size.y1)+border)
     drawPinballComponents()
@@ -1036,7 +1036,7 @@ function exportBitmap()
     gui.status("Bitmap saved as " .. currentFilename .. ".png")
 end
 
-function saveToFile ()
+function saveToFile()
 
     tableDef.identifier = "nova pinball table layout"
     tableDef.version = VERSION
@@ -1074,7 +1074,7 @@ function saveToFile ()
     
 end
 
-function loadFromFile ()
+function loadFromFile()
     unselect()
     disableEditor = true
     local loadCallback = function(filename)

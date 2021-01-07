@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.multichoice.multichoicerow"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- multichoicerow class
 local newobject = loveframes.NewObject("multichoicerow", "loveframes_object_multichoicerow", true)
@@ -26,8 +25,8 @@ function newobject:initialize()
 	self.canclick = false
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -76,37 +75,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawMultiChoiceRow or skins[defaultskin].DrawMultiChoiceRow
-	local draw = self.Draw
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -120,7 +88,7 @@ function newobject:mousepressed(x, y, button)
 	
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		self.down = true
 		loveframes.downobject = self
 	end
@@ -141,7 +109,7 @@ function newobject:mousereleased(x, y, button)
 	
 	local text = self.text
 	
-	if self.hover and self.down and self.canclick and button == "l" then
+	if self.hover and self.down and self.canclick and button == 1 then
 		self.parent.list:SelectChoice(text)
 	end
 	
@@ -183,4 +151,7 @@ function newobject:GetText()
 
 	return self.text
 	
+end
+
+---------- module end ----------
 end

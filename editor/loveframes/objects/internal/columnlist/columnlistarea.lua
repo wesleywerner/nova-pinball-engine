@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.columnlist.columnlistarea"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- columnlistarea class
 local newobject = loveframes.NewObject("columnlistarea", "loveframes_object_columnlistarea", true)
@@ -39,8 +38,8 @@ function newobject:initialize(parent)
 	self.children = {}
 
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -69,7 +68,7 @@ function newobject:update(dt)
 	end
 	
 	for k, v in ipairs(self.children) do
-		local col = loveframes.util.BoundingBox(self.x, v.x, self.y, v.y, self.width, v.width, self.height, v.height)
+		local col = loveframes.BoundingBox(self.x, v.x, self.y, v.y, self.width, v.width, self.height, v.height)
 		if col then
 			v:update(dt)
 		end
@@ -93,7 +92,10 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-
+	if loveframes.state ~= self.state then
+		return
+	end
+	
 	if not self.visible then
 		return
 	end
@@ -102,14 +104,6 @@ function newobject:draw()
 	local y = self.y
 	local width = self.width
 	local height = self.height
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawColumnListArea or skins[defaultskin].DrawColumnListArea
-	local drawoverfunc = skin.DrawOverColumnListArea or skins[defaultskin].DrawOverColumnListArea
-	local draw = self.Draw
 	local swidth = width
 	local sheight = height
 	
@@ -123,34 +117,39 @@ function newobject:draw()
 	
 	local stencilfunc = function() love.graphics.rectangle("fill", x, y, swidth, sheight) end
 	
-	-- set the object's draw order
 	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
+	
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
 	
 	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
 	
-	for k, v in ipairs(self.children) do
-		local col = loveframes.util.BoundingBox(self.x, v.x, self.y, v.y, width, v.width, height, v.height)
-		if col then
-			v:draw()
+	local children = self.children
+	if children then
+		for k, v in ipairs(self.children) do
+			local col = loveframes.BoundingBox(self.x, v.x, self.y, v.y, width, v.width, height, v.height)
+			if col then
+				v:draw()
+			end
 		end
 	end
 	
 	love.graphics.setStencilTest()
 	
-	for k, v in ipairs(self.internals) do
-		v:draw()
+	drawfunc = self.DrawOver or self.drawoverfunc
+	if drawfunc then
+		drawfunc(self)
 	end
 	
-	if not draw then
-		skin.DrawOverColumnListArea(self)
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(self.internals) do
+			v:draw()
+		end
 	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -161,36 +160,10 @@ function newobject:mousepressed(x, y, button)
 
 	local scrollamount = self.mousewheelscrollamount
 	
-	if self.hover and button == "l" then
+	if self.hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
-		end
-	end
-	
-	local bar = false 
-	if self.vbar and self.hbar then
-		bar = self:GetVerticalScrollBody():GetScrollBar()
-	elseif self.vbar and not self.hbar then
-		bar = self:GetVerticalScrollBody():GetScrollBar()
-	elseif not self.var and self.hbar then
-		bar = self:GetHorizontalScrollBody():GetScrollBar()
-	end
-	
-	if self:IsTopList() and bar then
-		if self.dtscrolling then
-			local dt = love.timer.getDelta()
-			if button == "wu" then
-				bar:Scroll(-scrollamount * dt)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount * dt)
-			end
-		else
-			if button == "wu" then
-				bar:Scroll(-scrollamount)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount)
-			end
 		end
 	end
 	
@@ -219,6 +192,43 @@ function newobject:mousereleased(x, y, button)
 	
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
+	end
+
+end
+
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the player moves a mouse wheel
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local scrollamount = self.mousewheelscrollamount
+
+	-- FIXME: button is nil
+	-- if self.hover and button == 1 then
+	if self.hover then
+		local baseparent = self:GetBaseParent()
+		if baseparent and baseparent.type == "frame" then
+			baseparent:MakeTop()
+		end
+	end
+
+	local bar = false
+	if self.vbar and self.hbar then
+		bar = self:GetVerticalScrollBody():GetScrollBar()
+	elseif self.vbar and not self.hbar then
+		bar = self:GetVerticalScrollBody():GetScrollBar()
+	elseif not self.vbar and self.hbar then
+		bar = self:GetHorizontalScrollBody():GetScrollBar()
+	end
+
+	if self:IsTopList() and bar then
+		if self.dtscrolling then
+			local dt = love.timer.getDelta()
+			bar:Scroll(-y * scrollamount * dt)
+		else
+			bar:Scroll(-y * scrollamount)
+		end
 	end
 
 end
@@ -453,4 +463,7 @@ function newobject:GetHorizontalScrollBody()
 	
 	return false
 	
+end
+
+---------- module end ----------
 end

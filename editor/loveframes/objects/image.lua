@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.image"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- image object
 local newobject = loveframes.NewObject("image", "loveframes_object_image", true)
@@ -28,8 +27,9 @@ function newobject:initialize()
 	self.sheary = 0
 	self.internal = false
 	self.image = nil
-	self.imagecolor = {255, 255, 255, 255}
+	self.imagecolor = {1, 1, 1, 1}
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -73,45 +73,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawImage or skins[defaultskin].DrawImage
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: SetImage(image)
 	- desc: sets the object's image
 --]]---------------------------------------------------------
@@ -119,6 +80,7 @@ function newobject:SetImage(image)
 
 	if type(image) == "string" then
 		self.image = love.graphics.newImage(image)
+		self.image:setFilter("nearest", "nearest")
 	else
 		self.image = image
 	end
@@ -417,4 +379,7 @@ function newobject:GetImageHeight()
 		return image:getHeight()
 	end
 	
+end
+
+---------- module end ----------
 end

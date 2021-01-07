@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.frame"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- frame object
 local newobject = loveframes.NewObject("frame", "loveframes_object_frame", true)
@@ -88,6 +87,7 @@ function newobject:initialize()
 	
 	table.insert(self.internals, close)
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -159,10 +159,10 @@ function newobject:update(dt)
 				local ondock = self.OnDock
 				for k, v in ipairs(basechildren) do
 					if v.type == "frame" then
-						local topcol = loveframes.util.RectangleCollisionCheck(self.dockzones.bottom, v.dockzones.top)
-						local botcol = loveframes.util.RectangleCollisionCheck(self.dockzones.top, v.dockzones.bottom)
-						local leftcol = loveframes.util.RectangleCollisionCheck(self.dockzones.right, v.dockzones.left)
-						local rightcol = loveframes.util.RectangleCollisionCheck(self.dockzones.left, v.dockzones.right)
+						local topcol = loveframes.RectangleCollisionCheck(self.dockzones.bottom, v.dockzones.top)
+						local botcol = loveframes.RectangleCollisionCheck(self.dockzones.top, v.dockzones.bottom)
+						local leftcol = loveframes.RectangleCollisionCheck(self.dockzones.right, v.dockzones.left)
+						local rightcol = loveframes.RectangleCollisionCheck(self.dockzones.left, v.dockzones.right)
 						local candockobject = v.dockable
 						if candockobject then
 							if topcol and not dockedtop then
@@ -170,33 +170,26 @@ function newobject:update(dt)
 								self.docky = my
 								self.dockedtop = true
 								self.topdockobject = v
-								if ondock then
-									ondock(object, v)
-								end
+								-- FIXME: object?
+								-- if ondock then ondock(object, v) end
 							elseif botcol and not dockedbottom then
 								self.y = v.y + v.height
 								self.docky = my
 								self.dockedbottom = true
 								self.bottomdockobject = v
-								if ondock then
-									ondock(object, v)
-								end
+								-- if ondock then ondock(object, v) end
 							elseif leftcol and not dockedleft then
 								self.x = v.x - self.width
 								self.dockx = mx
 								self.dockedleft = true
 								self.leftdockobject = v
-								if ondock then
-									ondock(object, v)
-								end
+								-- if ondock then ondock(object, v) end
 							elseif rightcol and not dockedright then
 								self.x = v.x + v.width
 								self.dockx = mx
 								self.dockedright = true
 								self.rightdockobject = v
-								if ondock then
-									ondock(object, v)
-								end
+								-- if ondock then ondock(object, v) end
 							end
 						end
 					end
@@ -412,56 +405,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local children = self.children
-	local internals = self.internals
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawFrame or skins[defaultskin].DrawFrame
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	for k, v in ipairs(internals) do
-		v:draw()
-	end
-	
-	-- loop through the object's children and draw them
-	for k, v in ipairs(children) do
-		v:draw()
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -488,14 +431,14 @@ function newobject:mousepressed(x, y, button)
 	local parent = self.parent
 	local base = loveframes.base
 	
-	if button == "l" then
+	if button == 1 then
 		-- initiate dragging if not currently dragging
 		if not dragging and self.hover and self.draggable  then
 			local topcol
 			if self.canresize then
-				topcol = loveframes.util.BoundingBox(x, self.x + 2, y, self.y + 2, 1, self.width - 4, 1, 21)
+				topcol = loveframes.BoundingBox(x, self.x + 2, y, self.y + 2, 1, self.width - 4, 1, 21)
 			else
-				topcol = loveframes.util.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, 25)
+				topcol = loveframes.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, 25)
 			end
 			if topcol then
 				if parent == base then
@@ -510,7 +453,7 @@ function newobject:mousepressed(x, y, button)
 			end
 		end
 		if not self.resizing and self.canresize and loveframes.hoverobject == self then
-			if loveframes.util.BoundingBox(self.x, x, self.y, y, 5, 1, 5, 1) then
+			if loveframes.BoundingBox(self.x, x, self.y, y, 5, 1, 5, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -526,7 +469,7 @@ function newobject:mousepressed(x, y, button)
 				if y ~= self.y then
 					self.resizeymod = y - self.y
 				end
-			elseif loveframes.util.BoundingBox(self.x + self.width - 5, x, self.y + self.height - 5, y, 5, 1, 5, 1) then
+			elseif loveframes.BoundingBox(self.x + self.width - 5, x, self.y + self.height - 5, y, 5, 1, 5, 1) then
 				self.resizing = true
 				self.resize_mode = "bottom_right"
 				self.resizex = x
@@ -540,7 +483,7 @@ function newobject:mousepressed(x, y, button)
 				if y ~= self.y + self.height then
 					self.resizeymod = (self.y + self.height) - y
 				end
-			elseif loveframes.util.BoundingBox(self.x + self.width - 5, x, self.y, y, 5, 1, 5, 1) then
+			elseif loveframes.BoundingBox(self.x + self.width - 5, x, self.y, y, 5, 1, 5, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -556,7 +499,7 @@ function newobject:mousepressed(x, y, button)
 				if y ~= self.y then
 					self.resizeymod = y - self.y
 				end
-			elseif loveframes.util.BoundingBox(self.x, x, self.y + self.height - 5, y, 5, 1, 5, 1) then
+			elseif loveframes.BoundingBox(self.x, x, self.y + self.height - 5, y, 5, 1, 5, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -572,7 +515,7 @@ function newobject:mousepressed(x, y, button)
 				if y ~= self.y + self.height then
 					self.resizeymod = (self.y + self.height) - y
 				end
-			elseif loveframes.util.BoundingBox(self.x + 5, x, self.y, y, self.width - 10, 1, 2, 1) then
+			elseif loveframes.BoundingBox(self.x + 5, x, self.y, y, self.width - 10, 1, 2, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -585,7 +528,7 @@ function newobject:mousepressed(x, y, button)
 				if y ~= self.y then
 					self.resizeymod = y - self.y
 				end
-			elseif loveframes.util.BoundingBox(self.x + 5, x, self.y + self.height - 2, y, self.width - 10, 1, 2, 1) then
+			elseif loveframes.BoundingBox(self.x + 5, x, self.y + self.height - 2, y, self.width - 10, 1, 2, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -598,7 +541,7 @@ function newobject:mousepressed(x, y, button)
 				if y ~= self.y then
 					self.resizeymod = (self.y + self.height) - y 
 				end
-			elseif loveframes.util.BoundingBox(self.x, x, self.y + 5, y, 2, 1, self.height - 10, 1) then
+			elseif loveframes.BoundingBox(self.x, x, self.y + 5, y, 2, 1, self.height - 10, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -611,7 +554,7 @@ function newobject:mousepressed(x, y, button)
 				if x ~= self.x then
 					self.resizexmod = x - self.x
 				end
-			elseif loveframes.util.BoundingBox(self.x + self.width - 2, x, self.y + 5, y, 2, 1, self.height - 10, 1) then
+			elseif loveframes.BoundingBox(self.x + self.width - 2, x, self.y + 5, y, 2, 1, self.height - 10, 1) then
 				self.resizing = true
 				self.dragging = false
 				loveframes.dragobject = false
@@ -626,7 +569,7 @@ function newobject:mousepressed(x, y, button)
 				end
 			end
 		end
-		if self.hover and button == "l" then
+		if self.hover and button == 1 then
 			self:MakeTop()
 		end
 	end
@@ -921,6 +864,7 @@ function newobject:SetIcon(icon)
 	
 	if type(icon) == "string" then
 		self.icon = love.graphics.newImage(icon)
+		self.icon:setFilter("nearest", "nearest")
 	else
 		self.icon = icon
 	end
@@ -1161,4 +1105,7 @@ function newobject:GetAlwaysOnTop()
 
 	return self.alwaysontop
 	
+end
+
+---------- module end ----------
 end

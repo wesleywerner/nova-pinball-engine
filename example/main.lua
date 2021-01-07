@@ -23,7 +23,7 @@
 
 -- This example shows the bare minimum to get a pinball game up and running.
 
-local pinball = require ("nova-pinball-engine")
+local pinball = require("nova-pinball-engine")
 
 function love.load()
 
@@ -44,12 +44,12 @@ function love.load()
 
 end
 
-function love.update (dt)
+function love.update(dt)
     -- Update the pinball simulation
     pinball:update(dt)
 end
 
-function love.keypressed (key, isrepeat)
+function love.keypressed(key, isrepeat)
     if (key == "escape") then
         love.event.quit()
     elseif (key == "space") then
@@ -64,72 +64,72 @@ function love.keyreleased(key)
     if (key == "rshift") then pinball:releaseRightFlippers() end
 end
 
-function love.draw ( )
+function love.draw()
     pinball:setCamera()
     pinball:draw()
 end
 
-function love.resize (w, h)
+function love.resize(w, h)
     -- Recalculate positions and draw scale
     pinball:resize(w, h)
 end
 
-function pinball.drawWall (points)
+function pinball.drawWall(points)
     love.graphics.setLineWidth(6)
-    love.graphics.setColor(92, 201, 201)
+    love.graphics.setColor(92/256, 201/256, 201/256)
     love.graphics.line(points)
 end
 
-function pinball.drawBumper (tag, x, y, r)
+function pinball.drawBumper(tag, x, y, r)
     love.graphics.setLineWidth(2)
-    love.graphics.setColor(42, 161, 152)
+    love.graphics.setColor(42/256, 161/256, 152/256)
     love.graphics.circle("fill", x, y, r * 0.8)
-    love.graphics.setColor(108, 113, 196)
+    love.graphics.setColor(108/256, 113/256, 196/256)
     love.graphics.circle("line", x, y, r)
 end
 
-function pinball.drawKicker (tag, x, y, points)
+function pinball.drawKicker(tag, x, y, points)
     love.graphics.setLineWidth(1)
-    love.graphics.setColor(108, 196, 113)
+    love.graphics.setColor(108/256, 196/256, 113/256)
     love.graphics.polygon("fill", points)
 end
 
-function pinball.drawTrigger (tag, points)
+function pinball.drawTrigger(tag, points)
     love.graphics.setLineWidth(1)
-    love.graphics.setColor(32, 32, 32)
+    love.graphics.setColor(32/256, 32/256, 32/256)
     love.graphics.polygon("fill", points)
 end
 
-function pinball.drawFlipper (orientation, position, angle, origin, points)
+function pinball.drawFlipper(orientation, position, angle, origin, points)
     -- orientation is "left" or "right"
     -- position {x,y}
     -- angle is in radians
     -- origin {x,y} is offset from the physics body center
     -- points {} are polygon vertices
 
-    love.graphics.setColor(108, 113, 196)
+    love.graphics.setColor(108/256, 113/256, 196/256)
     love.graphics.polygon("fill", points)
     love.graphics.setLineWidth(4)
-    love.graphics.setColor(68, 73, 156)
+    love.graphics.setColor(68/256, 73/256, 156/256)
     love.graphics.polygon("line", points)
 end
 
-function pinball.drawBall (x, y, radius)
+function pinball.drawBall(x, y, radius)
     love.graphics.setLineWidth(4)
-    love.graphics.setColor(238, 232, 213)
+    love.graphics.setColor(238/256, 232/256, 213/256)
     love.graphics.circle("fill", x, y, radius)
-    love.graphics.setColor(147, 161, 161)
+    love.graphics.setColor(147/256, 161/256, 161/256)
     love.graphics.circle("line", x, y, radius)
 end
 
 -- Called when a ball has drained out of play.
-function pinball.ballDrained (ballsInPlay)
+function pinball.ballDrained(ballsInPlay)
     if (ballsInPlay == 0) then
         pinball:newBall()
     end
 end
 
-function pinball.tagContact (tag, id)
+function pinball.tagContact(tag, id)
     print("tag hit:", tag, "id:", id)
 
     -- Demonstrates locking the ball in place for a short period

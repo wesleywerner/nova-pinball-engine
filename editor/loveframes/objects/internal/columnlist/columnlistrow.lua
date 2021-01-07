@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.columnlist.columnlistrow"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- columnlistrow class
 local newobject = loveframes.NewObject("columnlistrow", "loveframes_object_columnlistrow", true)
@@ -34,8 +33,8 @@ function newobject:initialize(parent, data)
 	end
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -68,36 +67,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	if not self.visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawColumnListRow or skins[defaultskin].DrawColumnListRow
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -107,12 +76,12 @@ function newobject:mousepressed(x, y, button)
 		return
 	end
 	
-	if self.hover and button == "l" then
+	if self.hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
 		end
-		self:GetParent():GetParent():SelectRow(self, loveframes.util.IsCtrlDown())
+		self:GetParent():GetParent():SelectRow(self, loveframes.IsCtrlDown())
 	end
 
 end
@@ -129,12 +98,12 @@ function newobject:mousereleased(x, y, button)
 	
 	if self.hover then
 		local parent = self:GetParent():GetParent()
-		if button == "l" then
+		if button == 1 then
 			local onrowclicked = parent.OnRowClicked
 			if onrowclicked then
 				onrowclicked(parent, self, self.columndata)
 			end
-		elseif button == "r" then
+		elseif button == 2 then
 			local onrowrightclicked = parent.OnRowRightClicked
 			if onrowrightclicked then
 				onrowrightclicked(parent, self, self.columndata)
@@ -243,4 +212,7 @@ function newobject:GetSelected()
 
 	return self.selected
 	
+end
+
+---------- module end ----------
 end

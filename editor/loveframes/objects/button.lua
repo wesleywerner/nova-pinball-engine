@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.button"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- button object
 local newobject = loveframes.NewObject("button", "loveframes_object_button", true)
@@ -27,7 +26,10 @@ function newobject:initialize()
 	self.toggleable = false
 	self.toggle = false
 	self.OnClick = nil
+	self.groupIndex = 0
+	self.checked = false
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -85,45 +87,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawButton or skins[defaultskin].DrawButton
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -144,7 +107,7 @@ function newobject:mousepressed(x, y, button)
 	
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -180,8 +143,21 @@ function newobject:mousereleased(x, y, button)
 	local enabled = self.enabled
 	local onclick = self.OnClick
 	
-	if hover and down and clickable and button == "l" then
+	if hover and down and clickable and button == 1 then
 		if enabled then
+			if self.groupIndex ~= 0 then
+				local baseparent = self.parent
+				if baseparent then
+					for k, v in ipairs(baseparent.children) do
+						if v.groupIndex then
+							if v.groupIndex == self.groupIndex then
+								v.checked = false
+							end
+						end
+					end
+				end
+				self.checked = true
+			end
 			if onclick then
 				onclick(self, x, y)
 			end
@@ -217,6 +193,30 @@ end
 function newobject:GetText()
 
 	return self.text
+	
+end
+
+--[[---------------------------------------------------------
+	- func: SetImage(image)
+	- desc: adds an image to the object
+--]]---------------------------------------------------------
+function newobject:SetImage(image)
+
+	if type(image) == "string" then
+		self.image = love.graphics.newImage(image)
+		self.image:setFilter("nearest", "nearest")
+	else
+		self.image = image
+	end
+end
+
+--[[---------------------------------------------------------
+	- func: GetImage()
+	- desc: gets the object's image
+--]]---------------------------------------------------------
+function newobject:GetImage()
+
+	return self.image
 	
 end
 
@@ -292,4 +292,7 @@ function newobject:GetToggleable()
 
 	return self.toggleable
 
+end
+
+---------- module end ----------
 end

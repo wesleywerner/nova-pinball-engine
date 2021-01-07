@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.sliderbutton"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- sliderbutton class
 local newobject = loveframes.NewObject("sliderbutton", "loveframes_object_sliderbutton", true)
@@ -32,8 +31,8 @@ function newobject:initialize(parent)
 	self.parent = parent
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -95,7 +94,7 @@ function newobject:update(dt)
 			self.staticx = self.startx + (x - self.clickx)
 			progress = self.staticx/(self.parent.width - self.width)
 			nvalue = self.parent.min + (self.parent.max - self.parent.min) * progress
-			nvalue = loveframes.util.Round(nvalue, self.parent.decimals)
+			nvalue = loveframes.Round(nvalue, self.parent.decimals)
 		-- calculations for vertical sliders
 		elseif slidetype == "vertical" then
 			self.staticy = self.starty + (y - self.clicky)
@@ -103,7 +102,7 @@ function newobject:update(dt)
 			local remaining = (self.parent.height - self.height) - self.staticy
 			local percent =  remaining/space
 			nvalue = self.parent.min + (self.parent.max - self.parent.min) * percent
-			nvalue = loveframes.util.Round(nvalue, self.parent.decimals)
+			nvalue = loveframes.Round(nvalue, self.parent.decimals)
 		end
 		if nvalue > self.parent.max then
 			nvalue = self.parent.max
@@ -148,38 +147,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawSliderButton or skins[defaultskin].DrawSliderButton
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -193,7 +160,7 @@ function newobject:mousepressed(x, y, button)
 	
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -255,4 +222,7 @@ function newobject:MoveToY(y)
 
 	self.staticy = y
 	
+end
+
+---------- module end ----------
 end

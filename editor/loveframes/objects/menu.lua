@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.menu"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- menu object
 local newobject = loveframes.NewObject("menu", "loveframes_object_menu", true)
@@ -27,6 +26,7 @@ function newobject:initialize(menu)
 	self.options = {}
 	self.internals = {}
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -113,54 +113,6 @@ function newobject:update(dt)
 		update(self, dt)
 	end
 
-end
-
---[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawMenu or skins[defaultskin].DrawMenu
-	local draw = self.Draw
-	local drawoverfunc = skin.DrawOverMenu or skins[defaultskin].DrawOverMenu
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	for k, v in ipairs(self.internals) do
-		v:draw()
-	end
-	
-	if drawoverfunc then
-		drawoverfunc(self)
-	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -329,4 +281,7 @@ function newobject:SetVisible(bool)
 	
 	return self
 	
+end
+
+---------- module end ----------
 end

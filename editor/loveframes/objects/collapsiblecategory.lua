@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.collapsiblecategory"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- collapsiblecategory object
 local newobject = loveframes.NewObject("collapsiblecategory", "loveframes_object_collapsiblecategory", true)
@@ -28,6 +27,7 @@ function newobject:initialize()
 	self.children = {}
 	self.OnOpenedClosed = nil
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -83,52 +83,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local open = self.open
-	local children = self.children
-	local curobject = children[1]
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawCollapsibleCategory or skins[defaultskin].DrawCollapsibleCategory
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	if open and curobject then
-		curobject:draw()
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -153,8 +107,8 @@ function newobject:mousepressed(x, y, button)
 	local curobject = children[1]
 	
 	if hover then
-		local col = loveframes.util.BoundingBox(self.x, x, self.y, y, self.width, 1, self.closedheight, 1)
-		if button == "l" and col then
+		local col = loveframes.BoundingBox(self.x, x, self.y, y, self.width, 1, self.closedheight, 1)
+		if button == 1 and col then
 			local baseparent = self:GetBaseParent()
 			if baseparent and baseparent.type == "frame" then
 				baseparent:MakeTop()
@@ -194,11 +148,11 @@ function newobject:mousereleased(x, y, button)
 	local clickable = self.clickable
 	local enabled = self.enabled
 	local open = self.open
-	local col = loveframes.util.BoundingBox(self.x, x, self.y, y, self.width, 1, self.closedheight, 1)
+	local col = loveframes.BoundingBox(self.x, x, self.y, y, self.width, 1, self.closedheight, 1)
 	local children = self.children
 	local curobject = children[1]
 	
-	if hover and col and down and button == "l" then
+	if hover and col and down and button == 1 then
 		if open then
 			self:SetOpen(false)
 		else
@@ -368,4 +322,7 @@ function newobject:GetOpen()
 
 	return self.open
 
+end
+
+---------- module end ----------
 end

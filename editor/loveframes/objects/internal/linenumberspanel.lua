@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.linenumberspanel"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- linenumberspanel class
 local newobject = loveframes.NewObject("linenumberspanel", "loveframes_object_linenumberspanel", true)
@@ -26,8 +25,8 @@ function newobject:initialize(parent)
 	self.internal = true
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -79,10 +78,11 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
+	if loveframes.state ~= self.state then
+		return
+	end
 	
-	local visible = self.visible
-	
-	if not visible then
+	if not self.visible then
 		return
 	end
 	
@@ -90,33 +90,23 @@ function newobject:draw()
 	local y = self.y
 	local width = self.width
 	local height = self.height
-	local stencilfunc = function() love.graphics.rectangle("fill", x, y, width, height) end
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawLineNumbersPanel or skins[defaultskin].DrawLineNumbersPanel
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	local stencilfunc = function() love.graphics.rectangle("fill", self.parent.x, self.parent.y, self.width, self.height) end
+	local stencilfunc = function() love.graphics.rectangle("fill", self.parent.x, self.parent.y, width, height) end
 	
 	if self.parent.hbar then
 		stencilfunc = function() love.graphics.rectangle("fill", self.parent.x, self.parent.y, self.width, self.parent.height - 16) end
 	end
 	
-	-- set the object's draw order
 	self:SetDrawOrder()
 	
-	love.graphics.setStencil(stencilfunc)
+	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
 	
-	if draw then
-		draw(self)
-	else
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
 	
-	love.graphics.setStencil()
+	love.graphics.setStencilTest()
 	
 end
 
@@ -134,7 +124,7 @@ function newobject:mousepressed(x, y, button)
 	
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -165,4 +155,7 @@ function newobject:GetOffsetY()
 
 	return self.offsety
 	
+end
+
+---------- module end ----------
 end

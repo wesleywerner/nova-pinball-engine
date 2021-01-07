@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.tabs"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- tabs object
 local newobject = loveframes.NewObject("tabs", "loveframes_object_tabs", true)
@@ -40,7 +39,7 @@ function newobject:initialize()
 	self.children = {}
 	
 	self:AddScrollButtons()
-	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -123,17 +122,11 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
-	
-	if not visible then
+	if not self.visible then
 		return
 	end
 	
@@ -141,48 +134,40 @@ function newobject:draw()
 	local y = self.y
 	local width = self.width
 	local height = self.height
-	local internals = self.internals
 	local tabheight = self:GetHeightOfButtons()
 	local stencilfunc = function() love.graphics.rectangle("fill", x + self.buttonareax, y, self.buttonareawidth, height) end
-	local internals = self.internals
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawTabPanel or skins[defaultskin].DrawTabPanel
-	local drawoverfunc = skin.DrawOverTabPanel or skins[defaultskin].DrawOverTabPanel
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
 	
-	-- set the object's draw order
 	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
+	
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
 	
-	love.graphics.setStencil(stencilfunc)
+	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
 	
-	for k, v in ipairs(internals) do
-		local col = loveframes.util.BoundingBox(x + self.buttonareax, v.x, self.y, v.y, self.buttonareawidth, v.width, tabheight, v.height)
-		if col or v.type == "scrollbutton" then
-			v:draw()
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			local col = loveframes.BoundingBox(x + self.buttonareax, v.x, self.y, v.y, self.buttonareawidth, v.width, tabheight, v.height)
+			if col or v.type == "scrollbutton" then
+				v:draw()
+			end
 		end
 	end
 	
-	love.graphics.setStencil()
+	love.graphics.setStencilTest()
 	
-	if #self.children > 0 then
-		self.children[self.tab]:draw()
+	local children = self.children
+	if #children > 0 then
+		children[self.tab]:draw()
 	end
 	
-	if not draw then
-		drawoverfunc(self)
+	drawfunc = self.DrawOver or self.drawoverfunc
+	if drawfunc then
+		drawfunc(self)
 	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -211,49 +196,10 @@ function newobject:mousepressed(x, y, button)
 	local tab = self.tab
 	local hover = self.hover
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
-		end
-	end
-	
-	if button == "wu" then
-		local buttonheight = self:GetHeightOfButtons()
-		local col = loveframes.util.BoundingBox(self.x, x, self.y, y, self.width, 1, buttonheight, 1)
-		local visible = internals[numinternals - 1]:GetVisible()
-		if col and visible then
-			local scrollamount = self.mousewheelscrollamount
-			local dtscrolling = self.dtscrolling
-			if dtscrolling then
-				local dt = love.timer.getDelta()
-				self.offsetx = self.offsetx + scrollamount * dt
-			else
-				self.offsetx = self.offsetx + scrollamount
-			end
-			if self.offsetx > 0 then
-				self.offsetx = 0
-			end
-		end
-	end
-		
-	if button == "wd" then
-		local buttonheight = self:GetHeightOfButtons()
-		local col = loveframes.util.BoundingBox(self.x, x, self.y, y, self.width, 1, buttonheight, 1)
-		local visible = internals[numinternals]:GetVisible()
-		if col and visible then
-			local bwidth = self:GetWidthOfButtons()
-			local scrollamount = self.mousewheelscrollamount
-			local dtscrolling = self.dtscrolling
-			if dtscrolling then
-				local dt = love.timer.getDelta()
-				self.offsetx = self.offsetx - scrollamount * dt
-			else
-				self.offsetx = self.offsetx - scrollamount
-			end
-			if ((self.offsetx + bwidth) + self.width) < self.width then
-				self.offsetx = -(bwidth + 10)
-			end
 		end
 	end
 	
@@ -301,6 +247,54 @@ function newobject:mousereleased(x, y, button)
 end
 
 --[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the player moves a mouse wheel
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local internals = self.internals
+	local numinternals = #internals
+
+	if y < 0 then
+		local buttonheight = self:GetHeightOfButtons()
+		local col = loveframes.BoundingBox(self.x, x, self.y, y, self.width, 1, buttonheight, 1)
+		local visible = internals[numinternals - 1]:GetVisible()
+		if col and visible then
+			local scrollamount = -y * self.mousewheelscrollamount
+			local dtscrolling = self.dtscrolling
+			if dtscrolling then
+				local dt = love.timer.getDelta()
+				self.offsetx = self.offsetx + scrollamount * dt
+			else
+				self.offsetx = self.offsetx + scrollamount
+			end
+			if self.offsetx > 0 then
+				self.offsetx = 0
+			end
+		end
+	elseif y > 0 then
+		local buttonheight = self:GetHeightOfButtons()
+		local col = loveframes.BoundingBox(self.x, x, self.y, y, self.width, 1, buttonheight, 1)
+		local visible = internals[numinternals]:GetVisible()
+		if col and visible then
+			local bwidth = self:GetWidthOfButtons()
+			local scrollamount = y * self.mousewheelscrollamount
+			local dtscrolling = self.dtscrolling
+			if dtscrolling then
+				local dt = love.timer.getDelta()
+				self.offsetx = self.offsetx - scrollamount * dt
+			else
+				self.offsetx = self.offsetx - scrollamount
+			end
+			if ((self.offsetx + bwidth) + self.width) < self.width then
+				self.offsetx = -(bwidth + 10)
+			end
+		end
+	end
+
+end
+
+--[[---------------------------------------------------------
 	- func: AddTab(name, object, tip, image)
 	- desc: adds a new tab to the tab panel
 --]]---------------------------------------------------------
@@ -308,6 +302,7 @@ function newobject:AddTab(name, object, tip, image, onopened, onclosed)
 
 	local padding = self.padding
 	local autosize = self.autosize
+	local retainsize = self.retainsize
 	local tabnumber = self.tabnumber
 	local tabheight = self.tabheight
 	local internals = self.internals
@@ -685,6 +680,7 @@ function newobject:SetTabObject(id, object)
 	local children = self.children
 	local internals = self.internals
 	local tab = children[id]
+	local state = self.state
 	
 	if tab then
 		tab:Remove()
@@ -763,4 +759,7 @@ function newobject:GetAutoButtonAreaWidth()
 
 	return self.autobuttonareawidth
 	
+end
+
+---------- module end ----------
 end

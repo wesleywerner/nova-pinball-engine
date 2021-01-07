@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.scrollable.scrollbody"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- scrollbar class
 local newobject = loveframes.NewObject("scrollbody", "loveframes_object_scrollbody", true)
@@ -124,8 +123,8 @@ function newobject:initialize(parent, bartype)
 	self:SetState(parentstate)
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -180,43 +179,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawScrollBody or skins[defaultskin].DrawScrollBody
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	local internals = self.internals
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	for k, v in ipairs(internals) do
-		v:draw()
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: GetScrollBar()
 	- desc: gets the object's scroll bar
 --]]---------------------------------------------------------
@@ -224,4 +186,7 @@ function newobject:GetScrollBar()
 
 	return self.internals[1].internals[1]
 	
+end
+
+---------- module end ----------
 end

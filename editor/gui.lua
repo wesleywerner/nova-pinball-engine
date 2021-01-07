@@ -18,7 +18,7 @@ gui.cursors = { }
 gui.toolboxVisible = true
 gui.registeredToolCount = 0
 
-function gui.status (text)
+function gui.status(text)
     gui.statusbar:SetText(text)
 end
 
@@ -26,7 +26,7 @@ function gui.setTool(text)
     gui.toolName:SetText(text)
 end
 
-function gui.createStatusbar ( )
+function gui.createStatusbar()
     local statusBarHeight = 20
     local statusPanel = loveframes.Create("panel")
     local screenWidth, screenHeight = love.graphics.getDimensions()
@@ -36,14 +36,14 @@ function gui.createStatusbar ( )
     gui.statusbar:SetText("Welcome to the Nova Pinball table editor! Press F1 for shortcuts.")
 
     gui.toolName = loveframes.Create("text", statusPanel)
-    gui.toolName:SetDefaultColor(0, 0, 255)
+    gui.toolName:SetDefaultColor(0, 0, 1)
     gui.toolName:SetText("")
     gui.toolName:SetPos(screenWidth - 150, 5)
     gui.toolName:CenterX()
 
 end
 
-function gui.createAdvancedPane ( )
+function gui.createAdvancedPane()
 	local screenWidth, screenHeight = love.graphics.getDimensions()
     local advancedPaneWidth = 160
     gui.advancedPaneX = screenWidth - advancedPaneWidth
@@ -100,23 +100,23 @@ function gui.createAdvancedPane ( )
 
 end
 
-function gui.readComponentTag (tag)
+function gui.readComponentTag(tag)
     gui.componentTagInput:SetText(tag)
 end
 
-function gui.readComponentCooldown (value)
+function gui.readComponentCooldown(value)
     gui.componentCooldownInput:SetText(value)
 end
 
-function gui.setComponentTag (tag)
+function gui.setComponentTag(tag)
 
 end
 
-function gui.setComponentCooldown (cooldown)
+function gui.setComponentCooldown(cooldown)
 
 end
 
-function gui.setComponentCyclerItems (items, clickHandler)
+function gui.setComponentCyclerItems(items, clickHandler)
     local l = gui.componentCyclerList
     -- TODO Does clear release previous button objects? Keep an eye out here for possible memory leaks.
     l:Clear()
@@ -132,7 +132,7 @@ function gui.setComponentCyclerItems (items, clickHandler)
     end
 end
 
-function gui.createToolbox (tools)
+function gui.createToolbox(tools)
 
     -- group tools into categories
     local cats = { }
@@ -206,7 +206,7 @@ function gui.createToolbox (tools)
 
 end
 
-function gui.showMain (loadHandler, saveHandler)
+function gui.showMain(loadHandler, saveHandler)
     if (not gui.main) then
         gui.main = loveframes.Create("frame")
         gui.main:SetName("Nova Pinball")
@@ -233,36 +233,36 @@ function gui.showMain (loadHandler, saveHandler)
     end
 end
 
-function gui.hideMain ( )
+function gui.hideMain()
     if (gui.main) then
         gui.main:SetVisible(false)
         gui.main = nil
     end
 end
 
-function gui.setCursor (image)
-    if (image) then
-        love.mouse.setCursor(love.mouse.newCursor(love.graphics.newImage(image):getData(), 10, 10))
-    else
-        love.mouse.setCursor()
-    end
+function gui.setCursor(image)
+    love.mouse.setCursor()
 end
 
 -- Get files in a directory as {filename, modtime}
-function gui.getFiles (directory)
+function gui.getFiles(directory)
     local allItems = love.filesystem.getDirectoryItems(directory)
     local files = { }
     for _, f in pairs(allItems) do
         local fullpath = directory .. "/" .. f
         if love.filesystem.isFile(fullpath) then
-            local modtime, errormsg = love.filesystem.getLastModified(fullpath)
-            table.insert(files, {filename=f, modtime=os.date("%c", modtime) or errormsg})
+            local info = love.filesystem.info(fullpath)
+            if info then
+            	table.insert(files, {filename=f, modtime=os.date("%c", info.modtime)})
+            else
+            	table.insert(files, {filename=f, modtime="Unknown"})
+            end
         end
     end
     return files
 end
 
-function gui.fileDialog (mode, directory, callback, warn)
+function gui.fileDialog(mode, directory, callback, warn)
 
     local files = gui.getFiles(directory)
     local frame = loveframes.Create("frame")

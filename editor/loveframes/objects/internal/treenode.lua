@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.treenode"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- button object
 local newobject = loveframes.NewObject("treenode", "loveframes_object_treenode", true)
@@ -30,6 +29,7 @@ function newobject:initialize()
 	self.OnOpen = nil
 	self.OnClose = nil
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -90,48 +90,34 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
-	
-	if not visible then
+	if not self.visible then
 		return
 	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawTreeNode or skins[defaultskin].DrawTreeNode
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
 	
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
+	
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
 		drawfunc(self)
 	end
 	
-	for k, v in ipairs(self.internals) do
-		if v.type == "treenode" then
-			if self.open then
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			if v.type == "treenode" then
+				if self.open then
+					v:draw()
+				end
+			else
 				v:draw()
 			end
-		else
-			v:draw()
 		end
 	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -157,7 +143,7 @@ function newobject:mousepressed(x, y, button)
 		v:mousepressed(x, y, button)
 	end
 	
-	if self.hover and button == "l" then
+	if self.hover and button == 1 then
 		local time = os.time()
 		if self.lastclick + 0.40 > time then
 			self.open = not self.open
@@ -205,6 +191,7 @@ function newobject:SetIcon(icon)
 
 	if type(icon) == "string" then
 		self.icon = love.graphics.newImage(icon)
+		self.icon:setFilter("nearest", "nearest")
 	else
 		self.icon = icon
 	end
@@ -303,4 +290,7 @@ function newobject:GetOpen()
 
 	return self.open
 	
+end
+
+---------- module end ----------
 end

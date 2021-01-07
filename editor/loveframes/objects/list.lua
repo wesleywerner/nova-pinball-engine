@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.list"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- list object
 local newobject = loveframes.NewObject("list", "loveframes_object_list", true)
@@ -40,6 +39,7 @@ function newobject:initialize()
 	self.children = {}
 	self.OnScroll = nil
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -123,65 +123,55 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
+	if loveframes.state ~= self.state then
 		return
 	end
 	
-	local visible = self.visible
-	
-	if not visible then
+	if not self.visible then
 		return
 	end
-
+	
 	local x = self.x
 	local y = self.y
 	local width = self.width
 	local height = self.height
-	local stencilfunc = function() love.graphics.rectangle("fill", x, y, width, height) end
-	local internals = self.internals
-	local children = self.children
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawList or skins[defaultskin].DrawList
-	local drawoverfunc = skin.DrawOverList or skins[defaultskin].DrawOverList
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-	
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
+	local stencilfunc = function()
+		love.graphics.rectangle("fill", x, y, width, height)
 	end
 	
-	love.graphics.stencil(stencilfunc)
+	self:SetDrawOrder()
+	
+	local drawfunc = self.Draw or self.drawfunc
+	if drawfunc then
+		drawfunc(self)
+	end
 		
-	for k, v in ipairs(children) do
-		local col = loveframes.util.BoundingBox(x, v.x, y, v.y, width, v.width, height, v.height)
-		if col then
-			v:draw()
+	love.graphics.stencil(stencilfunc)
+	love.graphics.setStencilTest("greater", 0)
+		
+	local children = self.children
+	if children then
+		for k, v in ipairs(children) do
+			local col = loveframes.BoundingBox(x, v.x, y, v.y, width, v.width, height, v.height)
+			if col then
+				v:draw()
+			end
 		end
 	end
 	
 	love.graphics.setStencilTest()
 	
-	for k, v in ipairs(internals) do
-		v:draw()
+	local drawfunc = self.DrawOver or self.drawoverfunc
+	if drawfunc then
+		drawfunc(self)
 	end
 	
-	if not draw then
-		drawoverfunc(self)
+	local internals = self.internals
+	if internals then
+		for k, v in ipairs(internals) do
+			v:draw()
+		end
 	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -203,39 +193,14 @@ function newobject:mousepressed(x, y, button)
 		return
 	end
 	
-	local toplist = self:IsTopList()
 	local hover = self.hover
-	local vbar = self.vbar
-	local hbar = self.hbar
-	local scrollamount = self.mousewheelscrollamount
 	local children = self.children
 	local internals = self.internals
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
-		end
-	end
-	
-	if vbar or hbar then
-		if toplist then
-			local bar = self:GetScrollBar()
-			local dtscrolling = self.dtscrolling
-			if dtscrolling then
-				local dt = love.timer.getDelta()
-				if button == "wu" then
-					bar:Scroll(-scrollamount * dt)
-				elseif button == "wd" then
-					bar:Scroll(scrollamount * dt)
-				end
-			else
-				if button == "wu" then
-					bar:Scroll(-scrollamount)
-				elseif button == "wd" then
-					bar:Scroll(scrollamount)
-				end
-			end
 		end
 	end
 	
@@ -245,6 +210,30 @@ function newobject:mousepressed(x, y, button)
 	
 	for k, v in ipairs(children) do
 		v:mousepressed(x, y, button)
+	end
+
+end
+
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the player moves a mouse wheel
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local toplist = self:IsTopList()
+	local vbar = self.vbar
+	local hbar = self.hbar
+	local scrollamount = self.mousewheelscrollamount
+
+	if (vbar or hbar) and toplist then
+		local bar = self:GetScrollBar()
+		local dtscrolling = self.dtscrolling
+		if dtscrolling then
+			local dt = love.timer.getDelta()
+			bar:Scroll(-y * scrollamount * dt)
+		else
+			bar:Scroll(-y * scrollamount)
+		end
 	end
 
 end
@@ -812,4 +801,7 @@ function newobject:GetDTScrolling()
 
 	return self.dtscrolling
 	
+end
+
+---------- module end ----------
 end

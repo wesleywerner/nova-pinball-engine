@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.menuoption"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- menuoption object
 local newobject = loveframes.NewObject("menuoption", "loveframes_object_menuoption", true)
@@ -29,7 +28,7 @@ function newobject:initialize(parent, option_type, menu)
 	self.internal = true
 	self.icon = false
 	self.func = nil
-	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -108,45 +107,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-	
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawMenuOption or skins[defaultskin].DrawMenuOption
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -188,7 +148,7 @@ function newobject:mousereleased(x, y, button)
 	
 	local hover = self.hover
 	local option_type = self.option_type
-	if hover and option_type ~= "divider" and button == "l" then
+	if hover and option_type ~= "divider" and button == 1 then
 		local func = self.func
 		if func then
 			local text = self.text
@@ -228,10 +188,10 @@ function newobject:SetIcon(icon)
 
 	if type(icon) == "string" then
 		self.icon = love.graphics.newImage(icon)
+		self.icon:setFilter("nearest", "nearest")
 	elseif type(icon) == "userdata" then
 		self.icon = icon
 	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -252,4 +212,7 @@ function newobject:SetFunction(func)
 
 	self.func = func
 	
+end
+
+---------- module end ----------
 end

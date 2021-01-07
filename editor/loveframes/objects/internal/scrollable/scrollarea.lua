@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.internal.scrollable.scrollarea"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- scrollarea class
 local newobject = loveframes.NewObject("scrollarea", "loveframes_object_scrollarea", true)
@@ -30,8 +29,8 @@ function newobject:initialize(parent, bartype)
 	table.insert(self.internals, loveframes.objects["scrollbar"]:new(self, bartype))
 	
 	-- apply template properties to the object
-	loveframes.templates.ApplyToObject(self)
-	
+	loveframes.ApplyTemplatesToObject(self)
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -120,43 +119,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local internals = self.internals
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawScrollArea or skins[defaultskin].DrawScrollArea
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	for k, v in ipairs(internals) do
-		v:draw()
-	end
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -175,7 +137,7 @@ function newobject:mousepressed(x, y, button)
 	local hover = self.hover
 	local delayamount = self.delayamount
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		self.down = true
 		self.scrolldelay = time + delayamount + 0.5
 		local baseparent = self:GetBaseParent()
@@ -218,7 +180,7 @@ function newobject:mousereleased(x, y, button)
 	
 	local internals = self.internals
 	
-	if button == "l" then
+	if button == 1 then
 		self.down = false
 	end
 	
@@ -236,4 +198,7 @@ function newobject:GetBarType()
 	
 	return self.bartype
 	
+end
+
+---------- module end ----------
 end

@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.slider"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- slider object
 local newobject = loveframes.NewObject("slider", "loveframes_object_slider", true)
@@ -42,6 +41,7 @@ function newobject:initialize()
 	-- set initial value to minimum
 	self:SetValue(self.min)
 	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -103,51 +103,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	local visible = self.visible
-	
-	if not visible then
-		return
-	end
-	
-	local internals = self.internals
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawSlider or skins[defaultskin].DrawSlider
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-	
-	-- draw internals
-	for k, v in ipairs(internals) do
-		v:draw()
-	end
-
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -177,7 +132,7 @@ function newobject:mousepressed(x, y, button)
 	local slidetype = self.slidetype
 	local scrollable = self.scrollable
 	
-	if hover and button == "l" then
+	if hover and button == 1 then
 		if slidetype == "horizontal" then
 			local xpos = x - self.x
 			local button = internals[1]
@@ -236,7 +191,7 @@ function newobject:SetValue(value)
 	end
 	
 	local decimals = self.decimals
-	local newval = loveframes.util.Round(value, decimals)
+	local newval = loveframes.Round(value, decimals)
 	local internals = self.internals
 	local onvaluechanged = self.OnValueChanged
 	
@@ -553,4 +508,7 @@ function newobject:GetEnabled()
 
 	return self.enabled
 	
+end
+
+---------- module end ----------
 end

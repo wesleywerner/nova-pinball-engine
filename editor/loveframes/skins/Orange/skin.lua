@@ -3,9 +3,8 @@
 	-- Copyright (c) 2012-2014 Kenny Shields --
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".skins.Orange.skin"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- skin table
 local skin = {}
@@ -20,27 +19,30 @@ skin.base = "Blue"
 skin.controls = {}
 
 -- multichoicerow
-skin.controls.multichoicerow_body_hover_color       = {255, 153, 0, 255}
+skin.controls.multichoicerow_body_hover_color       = {1, 0.6, 0, 1}
 
 -- slider
-skin.controls.slider_bar_outline_color              = {220, 220, 220, 255}
+skin.controls.slider_bar_outline_color              = {0.86, 0.86, 0.86, 1}
 
 -- checkbox
-skin.controls.checkbox_check_color                  = {255, 153, 0, 255}
+skin.controls.checkbox_check_color                  = {1, 0.6, 0, 1}
 
 -- radiobutton
-skin.controls.radiobutton_body_color                = {255, 255, 255, 255}
-skin.controls.radiobutton_check_color               = {255, 153, 0, 255}
-skin.controls.radiobutton_inner_border_color        = {204, 122, 0, 255}
+skin.controls.radiobutton_body_color                = {1, 1, 1, 1}
+skin.controls.radiobutton_check_color               = {1, 0.6, 0, 1}
+skin.controls.radiobutton_inner_border_color        = {0.8, 0.48, 0, 1}
 skin.controls.radiobutton_text_font                 = smallfont
 
 
 -- columnlistrow
-skin.controls.columnlistrow_body_selected_color     = {255, 153, 0, 255}
-skin.controls.columnlistrow_body_hover_color        = {255, 173, 51, 255}
+skin.controls.columnlistrow_body_selected_color     = {1, 0.6, 0, 1}
+skin.controls.columnlistrow_body_hover_color        = {1, 0.68, 0.2, 1}
 
 -- menuoption
-skin.controls.menuoption_body_hover_color           = {255, 153, 0, 255}
+skin.controls.menuoption_body_hover_color           = {1, 0.6, 0, 1}
 
 -- register the skin
-loveframes.skins.Register(skin)
+loveframes.RegisterSkin(skin)
+
+---------- module end ----------
+end

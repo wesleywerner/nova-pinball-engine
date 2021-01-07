@@ -8,9 +8,8 @@
 			 experimental and not final
 --]]------------------------------------------------
 
--- get the current require path
-local path = string.sub(..., 1, string.len(...) - string.len(".objects.text"))
-local loveframes = require(path .. ".libraries.common")
+return function(loveframes)
+---------- module start ----------
 
 -- text object
 local newobject = loveframes.NewObject("text", "loveframes_object_text", true)
@@ -32,10 +31,10 @@ function newobject:initialize()
 	self.lines = 0
 	self.formattedtext = {}
 	self.original = {}
-	self.defaultcolor = {0, 0, 0, 255}
-	self.shadowcolor = {0, 0, 0, 255}
-	self.linkcolor = {0, 102, 255, 255}
-	self.linkhovercolor = {0, 0, 255, 255}
+	self.defaultcolor = {0, 0, 0, 1}
+	self.shadowcolor = {0, 0, 0, 1}
+	self.linkcolor = {0, .4, 1, 1}
+	self.linkhovercolor = {0, 0, 1, 1}
 	self.ignorenewlines = false
 	self.shadow = false
 	self.linkcol = false
@@ -44,7 +43,7 @@ function newobject:initialize()
 	self.detectlinks = false
 	self.OnClickLink = nil
 	
-	local skin = loveframes.util.GetActiveSkin()
+	local skin = loveframes.GetActiveSkin()
 	if not skin then
 		skin = loveframes.config["DEFAULTSKIN"]
 	end
@@ -64,7 +63,7 @@ function newobject:initialize()
 			self.font = text_default_font
 		end
 	end
-	
+	self:SetDrawFunc()
 end
 
 --[[---------------------------------------------------------
@@ -113,7 +112,7 @@ function newobject:update(dt)
 				local text = v.text
 				local twidth = font:getWidth(text)
 				local theight = font:getHeight()
-				local col = loveframes.util.BoundingBox(x + linkx, mx, y + linky, my, twidth, 1, theight, 1)
+				local col = loveframes.BoundingBox(x + linkx, mx, y + linky, my, twidth, 1, theight, 1)
 				v.hover = false
 				if col then
 					v.hover = true
@@ -137,45 +136,6 @@ function newobject:update(dt)
 end
 
 --[[---------------------------------------------------------
-	- func: draw()
-	- desc: draws the object
---]]---------------------------------------------------------
-function newobject:draw()
-
-	local state = loveframes.state
-	local selfstate = self.state
-	
-	if state ~= selfstate then
-		return
-	end
-	
-	if not self.visible then
-		return
-	end
-	
-	local skins = loveframes.skins.available
-	local skinindex = loveframes.config["ACTIVESKIN"]
-	local defaultskin = loveframes.config["DEFAULTSKIN"]
-	local selfskin = self.skin
-	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawText or skins[defaultskin].DrawText
-	local draw = self.Draw
-	local drawcount = loveframes.drawcount
-	
-	-- set the object's draw order
-	self:SetDrawOrder()
-		
-	if draw then
-		draw(self)
-	else
-		drawfunc(self)
-	end
-
-	self:DrawText()
-	
-end
-
---[[---------------------------------------------------------
 	- func: mousepressed(x, y, button)
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
@@ -195,7 +155,7 @@ function newobject:mousepressed(x, y, button)
 	end
 	
 	local hover = self.hover
-	if hover and button == "l" then
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -214,7 +174,7 @@ function newobject:mousepressed(x, y, button)
 					local text = v.text
 					local twidth = font:getWidth(text)
 					local theight = font:getHeight()
-					local col = loveframes.util.BoundingBox(objx + linkx, x, objy + linky, y, twidth, 1, theight, 1)
+					local col = loveframes.BoundingBox(objx + linkx, x, objy + linky, y, twidth, 1, theight, 1)
 					if col then
 						local onclicklink = self.OnClickLink
 						if onclicklink then
@@ -297,7 +257,7 @@ function newobject:SetText(t)
 			end
 			v = v:gsub(string.char(9), "    ")
 			v = v:gsub("\n", " \n ")
-			local parts = loveframes.util.SplitString(v, " ")
+			local parts = loveframes.SplitString(v, " ")
 			for i, j in ipairs(parts) do
 				table.insert(self.formattedtext, {
 					font = prevfont, 
@@ -516,6 +476,9 @@ function newobject:DrawText()
 	local shadowyoffset = self.shadowyoffset
 	local shadowcolor = self.shadowcolor
 	local inlist, list = self:IsInList()
+	local printfunc = function(text, x, y)
+		love.graphics.print(text, math.floor(x + 0.5), math.floor(y + 0.5))
+	end
 	
 	for k, v in ipairs(textdata) do
 		local textx = v.x
@@ -532,7 +495,7 @@ function newobject:DrawText()
 				love.graphics.setFont(font)
 				if shadow then
 					love.graphics.setColor(unpack(shadowcolor))
-					love.graphics.print(text, x + textx + shadowxoffset, y + texty + shadowyoffset)
+					printfunc(text, x + textx + shadowxoffset, y + texty + shadowyoffset)
 				end
 				if link then
 					local linkcolor = v.linkcolor
@@ -546,13 +509,13 @@ function newobject:DrawText()
 				else
 					love.graphics.setColor(unpack(color))
 				end
-				love.graphics.print(text, x + textx, y + texty)
+				printfunc(text, x + textx, y + texty)
 			end
 		else
 			love.graphics.setFont(font)
 			if shadow then
 				love.graphics.setColor(unpack(shadowcolor))
-				love.graphics.print(text, x + textx + shadowxoffset, y + texty + shadowyoffset)
+				printfunc(text, x + textx + shadowxoffset, y + texty + shadowyoffset)
 			end
 			if link then
 				local linkcolor = v.linkcolor
@@ -566,12 +529,11 @@ function newobject:DrawText()
 			else
 				love.graphics.setColor(unpack(color))
 			end
-			love.graphics.print(text, x + textx, y + texty)
+			printfunc(text, x + textx, y + texty)
 		end
 	end
 	
 	return self
-	
 end
 
 --[[---------------------------------------------------------
@@ -834,4 +796,7 @@ function newobject:GetDetectLinks()
 
 	return self.detectlinks
 	
+end
+
+---------- module end ----------
 end
