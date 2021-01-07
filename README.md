@@ -4,7 +4,9 @@ A pinball simulator written in LÖVE.
 
 Created by Wesley "keyboard monkey" Werner
 
-With contributions by [Eric Ahnell](https://github.com/wrldwzrd89).
+With contributions by 
+- [Eric Ahnell](https://github.com/wrldwzrd89).
+- [Jason MacDuffie](https://github.com/jasonmacduffie)
 
 # Good to know
 
